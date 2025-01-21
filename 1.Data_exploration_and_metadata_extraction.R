@@ -34,3 +34,4 @@ write.csv(BJ_metadata, "BJ_metadata.csv", row.names = F)
 
 CD_metadata <- metadata[11:20,]
 #View(CD_metadata)
+write.csv(CD_metadata, "CD_metadata.csv", row.names = F)
