@@ -16,13 +16,13 @@ library(dplyr)
 ################################################################################
 rm(list=ls())                                        # remove all the objects from the R session
 
-workDir <- "C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big Data Biology/Modules/BIT103. Case Study/DATA/Case-Study_R-Project"      # working directory for the R session
+workDir <- "C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big Data Biology/Modules/BIT103. Case Study/DATA/Case-Study_R-Project/DESeq_all_data"      # working directory for the R session
 
 projectName <- "Pan_all_data"                         # name of the project
 author <- "Jamila"                                # author of the statistical analysis/report
 
 targetFile <- "Metadata_Pan_tidied.txt"                           # path to the design/target file
-rawDir <- "FeatureCounts"                                      # path to the directory containing raw counts files
+rawDir <- "../FeatureCounts"                                      # path to the directory containing raw counts files
 featuresToRemove <- c("alignment_not_unique",        # names of the features to be removed
                       "ambiguous", "no_feature",     # (specific HTSeq-count information and rRNA for example)
                       "not_aligned", "too_low_aQual")# NULL if no feature to remove
