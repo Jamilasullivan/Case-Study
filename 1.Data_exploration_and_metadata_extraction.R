@@ -18,7 +18,7 @@ str(counts)
 ################################################################################
 
 metadata <- read.csv("Metadata_Pan_tidied.csv", stringsAsFactors = T)
-write.table(metadata, "Metadata_Pan_tidied.txt", row.names = F, quote = F, sep = "\t")
+write.table(metadata, "DESeq_all_data/Metadata_Pan_tidied.txt", row.names = F, quote = F, sep = "\t")
 #View(metadata)
 
 ################################################################################
@@ -27,7 +27,7 @@ write.table(metadata, "Metadata_Pan_tidied.txt", row.names = F, quote = F, sep =
 
 BJ_metadata <- as.data.frame(metadata[1:10,])
 #View(BJ_metadata)
-write.table(BJ_metadata, "BJ_metadata.txt", row.names = F, quote = F, sep = "\t")
+write.table(BJ_metadata, "DESeq_BJ/BJ_metadata.txt", row.names = F, quote = F, sep = "\t")
 
 ################################################################################
 ####                        Creating CD Metadata                            ####
@@ -35,5 +35,9 @@ write.table(BJ_metadata, "BJ_metadata.txt", row.names = F, quote = F, sep = "\t"
 
 CD_metadata <- as.data.frame(metadata[11:20,])
 #View(CD_metadata)
-write.table(CD_metadata, "CD_metadata.txt", row.names = F, quote = F, sep = "\t")
+write.table(CD_metadata, "DESeq_CD/CD_metadata.txt", row.names = F, quote = F, sep = "\t")
+
+
+
+
 
