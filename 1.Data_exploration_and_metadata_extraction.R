@@ -17,21 +17,23 @@ str(counts)
 ####                          Creating Metadata                             ####
 ################################################################################
 
-metadata <- read.csv("Metadata_Pan_tidied.csv", header = T)
+metadata <- read.csv("Metadata_Pan_tidied.csv", stringsAsFactors = T)
+write.table(metadata, "Metadata_Pan_tidied.txt", row.names = F, quote = F, sep = "\t")
 #View(metadata)
 
 ################################################################################
 ####                        Creating BJ Metadata                            ####
 ################################################################################
 
-BJ_metadata <- metadata[1:10,]
+BJ_metadata <- as.data.frame(metadata[1:10,])
 #View(BJ_metadata)
-write.csv(BJ_metadata, "BJ_metadata.csv", row.names = F)
+write.table(BJ_metadata, "BJ_metadata.txt", row.names = F, quote = F, sep = "\t")
 
 ################################################################################
 ####                        Creating CD Metadata                            ####
 ################################################################################
 
-CD_metadata <- metadata[11:20,]
+CD_metadata <- as.data.frame(metadata[11:20,])
 #View(CD_metadata)
-write.csv(CD_metadata, "CD_metadata.csv", row.names = F)
+write.table(CD_metadata, "CD_metadata.txt", row.names = F, quote = F, sep = "\t")
+
