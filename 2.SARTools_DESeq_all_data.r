@@ -21,14 +21,14 @@ workDir <- "C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big 
 projectName <- "Pan_all_data"                         # name of the project
 author <- "Jamila"                                # author of the statistical analysis/report
 
-targetFile <- "target.txt"                           # path to the design/target file
-rawDir <- "raw"                                      # path to the directory containing raw counts files
+targetFile <- "Metadata_Pan_tidied.txt"                           # path to the design/target file
+rawDir <- "FeatureCounts"                                      # path to the directory containing raw counts files
 featuresToRemove <- c("alignment_not_unique",        # names of the features to be removed
                       "ambiguous", "no_feature",     # (specific HTSeq-count information and rRNA for example)
                       "not_aligned", "too_low_aQual")# NULL if no feature to remove
 
-varInt <- "group"                                    # factor of interest
-condRef <- "WT"                                      # reference biological condition
+varInt <- "region"                                    # factor of interest
+condRef <- "Beijing"                                      # reference biological condition
 batch <- NULL                                        # blocking factor: NULL (default) or "batch" for example
 
 fitType <- "parametric"                              # mean-variance relationship: "parametric" (default), "local" or "mean"
