@@ -4,25 +4,31 @@
 ### March 23rd, 2022
 ### designed to be executed with SARTools 1.8.1
 ################################################################################
+# Only the first time ever to install
+#install.packages("devtools")
+#library(devtools) 
+#devtools::install_github("PF2-pasteur-fr/SARTools", build_opts="--no-resave-data")
 
+library(SARTools)
+library(dplyr)
 ################################################################################
 ###                parameters: to be modified by the user                    ###
 ################################################################################
 rm(list=ls())                                        # remove all the objects from the R session
 
-workDir <- "C:/path/to/your/working/directory/"      # working directory for the R session
+workDir <- "C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big Data Biology/Modules/BIT103. Case Study/DATA/Case-Study_R-Project/DESeq_BJ"      # working directory for the R session
 
-projectName <- "projectName"                         # name of the project
-author <- "Your name"                                # author of the statistical analysis/report
+projectName <- "Pan_BJ"                         # name of the project
+author <- "Jamila"                                # author of the statistical analysis/report
 
-targetFile <- "target.txt"                           # path to the design/target file
-rawDir <- "raw"                                      # path to the directory containing raw counts files
+targetFile <- "BJ_metadata.txt"                           # path to the design/target file
+rawDir <- "../FeatureCounts"                                      # path to the directory containing raw counts files
 featuresToRemove <- c("alignment_not_unique",        # names of the features to be removed
                       "ambiguous", "no_feature",     # (specific HTSeq-count information and rRNA for example)
                       "not_aligned", "too_low_aQual")# NULL if no feature to remove
 
-varInt <- "group"                                    # factor of interest
-condRef <- "WT"                                      # reference biological condition
+varInt <- "gender"                                    # factor of interest
+condRef <- "M"                                      # reference biological condition
 batch <- NULL                                        # blocking factor: NULL (default) or "batch" for example
 
 fitType <- "parametric"                              # mean-variance relationship: "parametric" (default), "local" or "mean"
