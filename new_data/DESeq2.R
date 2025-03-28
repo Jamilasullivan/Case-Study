@@ -201,13 +201,13 @@ write.csv(normalised_counts, "normalised_counts_siglecf.csv") # saves normalised
 
 ## Dispersion estimates
 
-plotDispEsts(dds)
+plotDispEsts(dds) # plots the dispersion estimates
 
 ## PCA
 
 # variance stabilisation transformation
 
-vsd <- vst(dds, blind = F)
+vsd <- vst(dds, blind = F) # creates an object of variance stabilised data
 
 # use transformed values to create a PCA plot
 
