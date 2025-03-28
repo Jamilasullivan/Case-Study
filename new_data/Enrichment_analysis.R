@@ -2,26 +2,29 @@
 
 # only run the following two 'if' commands the first time you run the script
 
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
+#if (!requireNamespace("BiocManager", quietly = TRUE)){
+#  install.packages("BiocManager")
+#}
 
-if (!requireNamespace("cowplot", quietly = TRUE)) {
-  install.packages("cowplot")
-}
+#if (!requireNamespace("cowplot", quietly = TRUE)) {
+#  install.packages("cowplot")
+#}
 
 # intalling necessary programmes
 
 BiocManager::install("clusterProfiler")
 BiocManager::install("AnnotationDbi")
-BiocManager::install("org.Hs.eg.db")
+BiocManager::install("org.Mm.eg.db")
 BiocManager::install("enrichplot")
 BiocManager::install("pathview")
 BiocManager::install("ReactomePA")
 BiocManager::install("ggplot2")
 install.packages("tibble")
 
+# loading packages
+
 library(clusterProfiler)
-library(org.Hs.eg.db)
+library(org.Mm.eg.db)
 library(AnnotationDbi)
 library(enrichplot)
 library(cowplot)
@@ -33,14 +36,14 @@ library(tibble)
 
 ## set working directory
 
-setwd("C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big Data Biology/Modules/BIT101. Biocomputing and Big Data Handling/Mini Project Bioinformatics/Data sorting/Data_sorting/data_analysis")
+setwd("C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big Data Biology/Modules/BIT103. Case Study/NEW DATA - WORKING DIRECTORY/Case-Study/new_data")
 
 ## making object for testing
 
-deseq_results <- read.csv("all_deseq_results.csv", row.names = 1)
+deseq_results <- read.csv("all_deseq_results_siglecf.csv", row.names = 1)
 summary(deseq_results)
 deseq_filtered <- deseq_results %>% filter(deseq_results$padj < 0.05)
-deseq_filtered <- deseq_filtered %>% filter(abs(deseq_filtered$log2FoldChange) > 0.05)
+deseq_filtered <- deseq_filtered %>% filter(abs(deseq_filtered$log2FoldChange) > 1)
 deseq_filtered <- deseq_filtered[order(deseq_filtered$padj),]
 deseq_filtered
 dim(deseq_filtered)
@@ -51,29 +54,32 @@ print(genes_to_test)
 
 #### GO ENRICHMENT ANALYSIS ###########################################
 
-# biological processes - 6
+# biological processes
 ego_BP <- enrichGO(gene = genes_to_test,
                    universe = names(genes_to_test),
                    keyType = "SYMBOL",
-                   OrgDb = org.Hs.eg.db,
+                   OrgDb = org.Mm.eg.db,
                    ont = "BP")
 head(ego_BP)
+#view(ego_BP)
 
-# cellular component - 6
+# cellular component
 ego_CC <- enrichGO(gene = genes_to_test,
                    universe = names(genes_to_test),
                    keyType = "SYMBOL",
-                   OrgDb = org.Hs.eg.db,
+                   OrgDb = org.Mm.eg.db,
                    ont = "CC")
 head(ego_CC)
+#view(ego_CC)
 
-# molecular function - 6
+# molecular function
 ego_MF <- enrichGO(gene = genes_to_test,
                    universe = names(genes_to_test),
                    keyType = "SYMBOL",
-                   OrgDb = org.Hs.eg.db,
+                   OrgDb = org.Mm.eg.db,
                    ont = "MF")
 head(ego_MF)
+view(ego_MF)
 
 # plot results
 plot_egoBP <- plot(barplot(ego_BP, showCategory = 20, font.size = 5))
@@ -88,7 +94,7 @@ print(combined_ego_plot)
 # Extract and filter the top 5 terms based on p.adjust for each ontology
 data_BP <- as.data.frame(ego_BP)
 data_BP$Ontology <- "BP"
-top_BP <- data_BP[order(data_BP$p.adjust), ][1:7, ]  # Top 5 by adjusted p-value
+top_BP <- data_BP[order(data_BP$p.adjust), ][1:7, ]  # Top 7 by adjusted p-value
 
 data_CC <- as.data.frame(ego_CC)
 data_CC$Ontology <- "CC"
@@ -117,7 +123,7 @@ ggplot(plot_data, aes(x = reorder(Description, Count), y = Count, fill = Ontolog
 #### GENE SET ENRICHMENT ANALYSIS ############################
 
 #data organisation
-deseq_filtered2 <- deseq_filtered[order(-deseq_filtered$log2FoldChange),]
+deseq_filtered2 <- deseq_filtered[order(-deseq_filtered$log2FoldChange),] # ordering data by descending log2foldchange
 deseq_filtered2
 summary(deseq_filtered2)
 
@@ -130,26 +136,29 @@ gene_list
 
 # gene set enrichment analysis
 
-# BP - 6
+# BP
 gse_BP <- gseGO(gene_list,
                 ont = "BP",
                 keyType = "SYMBOL",
-                OrgDb = "org.Hs.eg.db")
+                OrgDb = "org.Mm.eg.db")
 head(gse_BP)
+#view(gse_BP)
 
-# CC - 6 
+# CC
 gse_CC <- gseGO(gene_list,
                 ont = "CC",
                 keyType = "SYMBOL",
-                OrgDb = "org.Hs.eg.db")
+                OrgDb = "org.Mm.eg.db")
 head(gse_CC)
+#view(gse_CC)
 
-## MF - 6
+## MF
 gse_MF <- gseGO(gene_list,
                 ont = "MF",
                 keyType = "SYMBOL",
-                OrgDb = "org.Hs.eg.db")
+                OrgDb = "org.Mm.eg.db")
 head(gse_MF)
+view(gse_MF)
 
 ## plotting ##
 
@@ -157,32 +166,31 @@ head(gse_MF)
 
 # These may vary slightly for each different run of the code dues to adjusted p-values 
 
-gseaplot(gse_BP, geneSetID = 1) # mostly downregulated # BP - hormone metabolic process   
-gseaplot(gse_BP, geneSetID = 2) # mostly downregulated # BP - organic acid biosynthetic process
-gseaplot(gse_BP, geneSetID = 3) # mostly downregulated # BP - carboxylic acid biosynthetic process 
-gseaplot(gse_BP, geneSetID = 4) # mostly downregulated # BP - cellular lipid catabolic process  
-gseaplot(gse_BP, geneSetID = 5) # mostly downregulated # BP - digestion
-gseaplot(gse_BP, geneSetID = 6) # mostly downregulated # BP - organic acid catabolic process
+gseaplot(gse_BP, geneSetID = 1)   
+gseaplot(gse_BP, geneSetID = 2) 
+gseaplot(gse_BP, geneSetID = 3)
+gseaplot(gse_BP, geneSetID = 4)
+gseaplot(gse_BP, geneSetID = 5)
+gseaplot(gse_BP, geneSetID = 6)
 
-gseaplot(gse_CC, geneSetID = 1) # mostly downregulated # CC - cluster of actin-based cell projections
-gseaplot(gse_CC, geneSetID = 2) # mostly downregulated # CC - brush border
-gseaplot(gse_CC, geneSetID = 3) # mostly downregulated # CC - endoplasmic reticulum lumen
-gseaplot(gse_CC, geneSetID = 4) # mostly downregulated # CC - peroxisome
-gseaplot(gse_CC, geneSetID = 5) # mostly downregulated # CC - microbody
-gseaplot(gse_CC, geneSetID = 6) # mostly downregulated # CC - primary lysosome 
+gseaplot(gse_CC, geneSetID = 1) 
+gseaplot(gse_CC, geneSetID = 2)
+gseaplot(gse_CC, geneSetID = 3)
+gseaplot(gse_CC, geneSetID = 4) 
+gseaplot(gse_CC, geneSetID = 5)
+gseaplot(gse_CC, geneSetID = 6)
 
-gseaplot(gse_MF, geneSetID = 1) # mostly downregulated # MF - endopeptidase activity
-gseaplot(gse_MF, geneSetID = 2) # mostly downregulated # MF - carboxylic acid binding
-gseaplot(gse_MF, geneSetID = 3) # mostly downregulated # MF - monooxygenase activity
-gseaplot(gse_MF, geneSetID = 4) # mostly downregulated # MF - monocarboxylic acid binding
-gseaplot(gse_MF, geneSetID = 5) # mostly downregulated # MF - glycosaminoglycan binding 
-gseaplot(gse_MF, geneSetID = 6) # mostly downregulated # MF - metallopeptidase activity
+gseaplot(gse_MF, geneSetID = 1) 
+gseaplot(gse_MF, geneSetID = 2)
+gseaplot(gse_MF, geneSetID = 3)
+gseaplot(gse_MF, geneSetID = 4)
+gseaplot(gse_MF, geneSetID = 5)
+gseaplot(gse_MF, geneSetID = 6)
 
 gene_list[1]
-gene_list[3825]
+gene_list[3202]
 
 # Plotting with ggplot2
-
 
 # bar plot# bar plotrank()
 
@@ -223,12 +231,12 @@ ggplot(plot_data2, aes(x = reorder(Description, setSize), y = setSize, fill = On
 gene_id <-bitr(rownames(deseq_filtered), 
                fromType = "SYMBOL", 
                toType = "ENTREZID", 
-               OrgDb= "org.Hs.eg.db")
+               OrgDb= "org.Mm.eg.db")
 
 gene_id <- gene_id$ENTREZID
 
 KEGG <- enrichKEGG(gene = gene_id,
-                   organism = "hsa")
+                   organism = "mmu")
 
 KEGG_plot <- KEGG[, c("Description", "Count", "p.adjust")]
 
@@ -261,7 +269,7 @@ gse_genes
 gene_id <-bitr(rownames(deseq_filtered), 
                fromType = "SYMBOL", 
                toType = "ENTREZID",  
-               OrgDb= "org.Hs.eg.db") # 5.9% of genes lost leaving 6343 genes
+               OrgDb= "org.Mm.eg.db")
 
 deseq_filtered
 
@@ -279,7 +287,7 @@ gse_genes
 summary(gse_genes)
 
 gse_KEGG <- gseKEGG(geneList = gse_genes,
-                    organism = "hsa")
+                    organism = "mmu")
 
 head(gse_KEGG)
 nrow(gse_KEGG)
