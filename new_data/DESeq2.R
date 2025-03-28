@@ -188,14 +188,14 @@ dim(filtered) # checks data
 
 ## Save the deseq result. We will save both the original data(res) and the filtered one(hits) 
 
-write.csv(deseq_results, "all_deseq_results_sifglecf.csv")
-write.csv(filtered, "filtered_deseq_results_siglecf.csv")
+write.csv(deseq_results, "all_deseq_results_sifglecf.csv") # saves DESeq results as a csv
+write.csv(filtered, "filtered_deseq_results_siglecf.csv") # saves filtered DESeq results as a csv
 
 ## save normalised read counts 
 
-normalised_counts <- counts(dds,normalized = TRUE)
-head(normalised_counts)
-write.csv(normalised_counts, "normalised_counts_siglecf.csv")
+normalised_counts <- counts(dds,normalized = TRUE) # creates a new object where the counts data is normalised
+head(normalised_counts) # checks data 
+write.csv(normalised_counts, "normalised_counts_siglecf.csv") # saves normalised counts as a csv
 
 ## VISUALISATION ###############################################################
 
