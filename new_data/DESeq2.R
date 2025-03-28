@@ -1,7 +1,10 @@
 ## installing and loading necessary packages ###################################
 
-install.packages("BiocManager")
-BiocManager::install("org.Mm.eg.db")
+# only run the next two lines on first application of the script
+#install.packages("BiocManager")
+#BiocManager::install("org.Mm.eg.db")
+
+# Loading packages
 
 library(DESeq2)
 library(pheatmap)
@@ -11,6 +14,8 @@ library(ggplot2)
 library(ggrepel)
 library(org.Mm.eg.db)  # Mouse annotation package
 library(AnnotationDbi)
+
+## DATA ORGANISATION ###########################################################
 
 ## set working directory
 
@@ -44,6 +49,8 @@ str(metadata) # get info on all
 
 metadata <- metadata[order(rownames(metadata)), ] # ordering the metadata rows by sample name to match the counts data
 #View(metadata) # check the metadata
+
+## DESeq2 ANALYSIS #############################################################
 
 ## create a DESeq object and import the sample information and count data
 
@@ -174,26 +181,110 @@ filtered <- deseq_results_ordered %>% filter(deseq_results_ordered$padj < 0.05) 
 
 filtered <- filtered %>% filter(abs(filtered$log2FoldChange) > 1) # gives genes above a log2fold change of 1
 
-dim(deseq_results)
-dim(filtered)
+dim(deseq_results_ordered) # checks data
+dim(filtered) # checks data
 
 ## Step 3: make queries
 
+## Save the deseq result. We will save both the original data(res) and the filtered one(hits) 
 
+write.csv(deseq_results, "all_deseq_results_sifglecf.csv")
+write.csv(filtered, "filtered_deseq_results_siglecf.csv")
 
+## save normalised read counts 
 
-###############################################################################
+normalised_counts <- counts(dds,normalized = TRUE)
+head(normalised_counts)
+write.csv(normalised_counts, "normalised_counts_siglecf.csv")
 
-## testing stuff
+## VISUALISATION ###############################################################
 
-## variability in the data
+## Dispersion estimates
 
-summary(rowSums(counts(dds)))
+plotDispEsts(dds)
 
-summary(deseq_results$pvalue)
-summary(deseq_results$padj)
+## PCA
 
+# variance stabilisation transformation
 
+vsd <- vst(dds, blind = F)
+
+# use transformed values to create a PCA plot
+
+plotPCA(vsd, intgroup=c("Condition"), pcsToUse = 1:2) # PC1 explains 98% of variance
+plotPCA(vsd, intgroup=c("Condition"), pcsToUse = 2:3) # PC3 explains 0% of variance
+
+## Heatmaps
+# R packgage: pheatmap
+
+# Heatmap of sample-to-sample distance matrix (with clustering) based on the normalised counts.
+
+# generate the distance matrix
+
+sampleDists <- dist(t(assay(vsd)))
+sampleDistMatrix <- as.matrix(sampleDists)
+colnames(sampleDistMatrix)
+sampleDistMatrix
+
+# set colour scheme
+
+colours <- colorRampPalette(rev(brewer.pal(9,"Reds")))(255)
+
+# generate the heatmap
+samples_heatmap <- pheatmap(sampleDistMatrix, clustering_distance_rows = sampleDists,
+                            clustering_distance_cols = sampleDists, col = colours, border_color = "transparent", cluster_cols = T, cluster_rows = T, fontsize = 8)
+
+# Heatmap of log transformed normalised counts. We will use the top 10 genes. 
+
+colours2 <- colorRampPalette(brewer.pal(9,"Reds"))(255)
+
+top_hits <- deseq_results[order(deseq_results$padj),][1:10,]
+top_hits <- row.names(top_hits)
+top_hits
+
+rld <- rlog(dds,blind=FALSE)
+
+pheatmap(assay(rld)[top_hits,], cluster_rows = T, show_rownames = T, cluster_cols = T, fontsize = 8, color = colours2)
+
+annot_info <- as.data.frame(colData(dds)[,c('group','time_point')])
+pheatmap(assay(rld)[top_hits,], cluster_rows = T, show_rownames = T, cluster_cols = T,
+         annotation_col = annot_info, fontsize = 8, color = colours2,)
+
+pheatmap(assay(rld)[top_hits,], cluster_rows = T, show_rownames = T, cluster_cols = T,
+         annotation_col = annot_info, fontsize = 8, color = colours2, kmeans_k = 4) # k-means cluster analysis of the same data as the heatmap above
+
+pheatmap(assay(rld)[top_hits,], cluster_rows = T, show_rownames = T, cluster_cols = T,
+         annotation_col = annot_info, fontsize = 8, color = colours2, cutree_rows = 4, cutree_cols = 5, show_colnames = FALSE)
+
+# testing the top 30 genes
+
+top_30 <- deseq_results[order(deseq_results$padj),][1:30,]
+top_30 <- row.names(top_30)
+top_30
+
+pheatmap(assay(rld)[top_30,], cluster_rows = T, show_rownames = T, cluster_cols = T,
+         annotation_col = annot_info, fontsize = 8, color = colours2, cutree_rows = 4, cutree_cols = 5, show_colnames = F)
+# Heatmap of Z scores. We will use the top 10 genes. 
+
+cal_z_score <- function(x) {(x-mean(x))/sd(x)}
+zscore_all <- t(apply(normalised_counts,1,cal_z_score))
+zscore_subset <- zscore_all[top_hits,]
+pheatmap(zscore_subset, cluster_rows = T, cluster_cols = T, annotation_col = annot_info, fontsize = 8, cutree_rows = 4, cutree_cols = 5, show_colnames = FALSE, color = colours2)
+
+# MA plot 
+
+plotMA(dds,ylim = c(-2,2), alpha = 0.05)
+
+resLFC <- lfcShrink(dds,coef="group_infected_vs_mock", type = "apeglm") # remove the noise
+plotMA(resLFC,ylim=c(-2,2), alpha = 0.05)
+
+## other volcano 
+
+deseq_results$symbol <- mapIds(org.Hs.eg.db, keys = rownames(deseq_results), keytype = "SYMBOL", column = "SYMBOL")
+filtered
+deseq_results
+
+EnhancedVolcano(resLFC, x = "log2FoldChange", y = "padj", lab = deseq_results$symbol, selectLab = top_hits, title = NULL, subtitle = NULL, labSize = 5, FCcutoff = 2, pCutoff = 0.05)
 
 
 
