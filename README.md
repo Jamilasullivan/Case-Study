@@ -11,7 +11,21 @@ The task for this respository is to reanalyse the data collected in a previous s
 
 ## Differential Gene Expression Analysis
 
+### Tutorials that assisted in the production of this script: 
+* ["How I analyze RNA Seq Gene Expression data using DESeq2"](https://www.youtube.com/watch?v=kOlMcZujHHA)
+* ["RNAseq volcano plot of differentially expressed genes"](https://www.youtube.com/watch?v=vRr78s37CI4)
+* ["Draw Heatmap with Clusters Using pheatmap Package in R (4 Examples) | k-means, Row & Column Clusters"](https://www.youtube.com/watch?v=IjperDJ8IaI)
+* ["deseq tutorial & visualization. how to plot dispersion estimates"](https://www.youtube.com/watch?v=6EiT5GF5rns)
+* ["RNAseq tutorial – part 4 – Differential expression analysis with Deseq2"](https://www.youtube.com/watch?v=Ul-9s8YOOSk)
+
 ## Enrichment Analysis
+
+### Tutorials that assisted in the production of this script: 
+* ["Overview of enrichment analysis"](https://yulab-smu.top/biomedical-knowledge-mining-book/enrichment-overview.html)
+* ["Gene Set Enrichment Analysis (+ R tutorial)"](https://www.youtube.com/watch?v=B7F7a9NcGS0)
+* ["RNAseq analysis | Gene ontology (GO) in R"](https://www.youtube.com/watch?v=JPwdqdo_tRg)
+* ["3 minute GSEA tutorial in R | RNAseq tutorials"](https://www.youtube.com/watch?v=Mi6u4r0lJvo)
+* ["Gene Set Enrichment Analysis with ClusterProfiler"](https://learn.gencore.bio.nyu.edu/rna-seq-analysis/gene-set-enrichment-analysis/)
 
 ## Alternative Splicing Analysis
 
