@@ -7,6 +7,10 @@
 
 The task for this respository is to reanalyse the data collected in a previous study by Shin et al. (2022). Analysis was carried out from raw data processing, through to functional analysis.
 
+The folder named *new_data* contains the analysis of the data mentioned above. 
+
+The folder named *old_data* contains the data and related files for the initially provided data that was not possible to analyse effectively.
+
 ## Raw Data Processing
 
 ## Differential Gene Expression Analysis
