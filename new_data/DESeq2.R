@@ -14,7 +14,7 @@ library(AnnotationDbi)
 
 ## set working directory
 
-setwd("C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big Data Biology/Modules/BIT103. Case Study/NEW DATA")
+setwd("C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big Data Biology/Modules/BIT103. Case Study/NEW DATA - WORKING DIRECTORY/Case-Study/new_data")
 
 ## load count data 
 
@@ -38,7 +38,7 @@ str(metadata) # get info on all
 # view both
 
 #View(counts)
-V#iew(metadata)
+#View(metadata)
 
 # ordering row names in metadata to match counts data
 
@@ -121,36 +121,46 @@ make_unique_with_underscore <- function(x) {
   for (i in seq_along(x)) {
     name <- x[i]
     
-    # Check if the name is duplicated
+    # Check if the name has been seen before
     if (name %in% names(counter)) {
       counter[[name]] <- counter[[name]] + 1
       unique_names[i] <- paste0(name, "_", counter[[name]])
     } else {
-      counter[[name]] <- 0
+      counter[[name]] <- 1  # Start counting from 1
       unique_names[i] <- name
     }
   }
   
   return(unique_names)
-} # function to name duplicates with a _ between the gene name and the number
+}# function to name duplicates with a _ between the gene name and the number
 
-test <- c("help_me", "help.me", "helpme", "helpme", "helpme")
-test <- make_unique_with_underscore(test)
+test <- c("test_run", "test.run", "testrun", "testrun", "testrun") # testing the function
+test <- make_unique_with_underscore(test) 
 test[grep("\\_", test)] 
-
 
 deseq_results_ordered$gene_symbol <- make_unique_with_underscore(deseq_results_ordered$gene_symbol) # using function to change duplicates to being separated with '_' rather than '.'. This is because some mouse gene symbol contain .s so it makes it difficult to tell the difference
 head(deseq_results_ordered)
 
 deseq_results_ordered$gene_symbol[grep("\\_", deseq_results_ordered$gene_symbol)] # check for the new values
 
-## make some queries 
+anyDuplicated(deseq_results_ordered$gene_symbol) # this tells me there are no duplicates in the gene symbols
+anyDuplicated(rownames(deseq_results_ordered)) # this tells me there are no duplicates in the row names (ENSEMBL IDs)
 
-## is MBD2 differentially expressed?
+rownames(deseq_results_ordered) <- deseq_results_ordered$gene_symbol # changes the row names of the dataframe to the gene_symbol column
+head(deseq_results_ordered) # checks the results
 
-deseq_results["MBD2",]
-deseq_results["ACE2",]
-deseq_results["IL6",]
+identical(deseq_results_ordered$gene_symbol, rownames(deseq_results_ordered)) # tells me that all of these row names match perfectly to the gene_symbol column
+
+deseq_results_ordered <- deseq_results_ordered[, !colnames(deseq_results_ordered) %in% "gene_symbol"] # removes the gene_symbol column
+head(deseq_results_ordered) # checks the results
+
+## make some queries about specific genes
+
+deseq_results_ordered["Cd44",] # there
+deseq_results_ordered["Nrxn1",] # not there 
+deseq_results_ordered["Dscam",] # not there
+deseq_results_ordered["Mblm1",] # not there
+deseq_results_ordered["Sox2",] # not there
 
 ## extract the most differentially expressed genes due to the treatment
 ## select genes with a significant change in gene expression (adjusted p value <0.05)
@@ -158,11 +168,11 @@ deseq_results["IL6",]
 
 ## Step 1: filter based on adjusted p value
 
-filtered <- deseq_results %>% filter(deseq_results$padj < 0.05)
+filtered <- deseq_results_ordered %>% filter(deseq_results_ordered$padj < 0.05) # gives genes below 0.05 adjusted p value
 
 ## Step 2: filter based on fold changes
 
-filtered <- filtered %>% filter(abs(filtered$log2FoldChange) > 1)
+filtered <- filtered %>% filter(abs(filtered$log2FoldChange) > 1) # gives genes above a log2fold change of 1
 
 dim(deseq_results)
 dim(filtered)
