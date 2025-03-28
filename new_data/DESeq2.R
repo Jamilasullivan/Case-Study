@@ -121,19 +121,14 @@ head(deseq_results_ordered) # get first 6 rows to check the above worked
 duplicated(rownames(deseq_results_ordered)) # checks for duplicated row names
 rownames(deseq_results_ordered)[duplicated(rownames(deseq_results_ordered))] # shows what duplicates are
 
-head(deseq_results_ordered) # checking the column has been added
+head(deseq_results_ordered) # checking the data
 
 anyDuplicated(rownames(deseq_results_ordered)) # this tells me there are no duplicates in the row names
-
-head(deseq_results_ordered) # checks the results
 
 ## make some queries about specific genes
 
 deseq_results_ordered["Cd44", ] # there
-deseq_results_ordered["Nrxn1", ] # not there
-deseq_results_ordered["Dscam", ] # not there
-deseq_results_ordered["Mblm1", ] # not there
-deseq_results_ordered["Sox2", ] # not there
+deseq_results_ordered["Siglecf", ] # there. The gene of interest.
 
 ## extract the most differentially expressed genes due to the treatment
 ## select genes with a significant change in gene expression (adjusted p value <0.05)
