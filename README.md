@@ -15,12 +15,16 @@ The folder named *old_data* contains the data and related files for the initiall
 
 ## Differential Gene Expression Analysis
 
-### Tutorials that assisted in the production of this script: 
+### Tutorials that assisted in the production of the DESeq2 script: 
 * ["How I analyze RNA Seq Gene Expression data using DESeq2"](https://www.youtube.com/watch?v=kOlMcZujHHA)
 * ["RNAseq volcano plot of differentially expressed genes"](https://www.youtube.com/watch?v=vRr78s37CI4)
 * ["Draw Heatmap with Clusters Using pheatmap Package in R (4 Examples) | k-means, Row & Column Clusters"](https://www.youtube.com/watch?v=IjperDJ8IaI)
 * ["deseq tutorial & visualization. how to plot dispersion estimates"](https://www.youtube.com/watch?v=6EiT5GF5rns)
 * ["RNAseq tutorial – part 4 – Differential expression analysis with Deseq2"](https://www.youtube.com/watch?v=Ul-9s8YOOSk)
+
+### Tutorials that assisted in the production of the Limma-Voom script:
+* ["Differential Expression with Limma-Voom"](https://ucdavis-bioinformatics-training.github.io/2018-June-RNA-Seq-Workshop/thursday/DE.html)
+* 
 
 ## Enrichment Analysis
 
