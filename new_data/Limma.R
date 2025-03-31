@@ -1,9 +1,11 @@
 ## PACKAGE INSTALLATION AND LOADING ############################################
 
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
+## only run the following two commands on first run of the script
 
-BiocManager::install("limma")
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#  install.packages("BiocManager")
+
+#BiocManager::install("limma")
 
 ## loading packages
 
@@ -55,17 +57,27 @@ metadata <- metadata[order(rownames(metadata)), ] # ordering the metadata rows b
 
 ## create DGEList object
 
-results <- DGEList(counts = counts, group = metadata$Condition) # identifies differentially expressed genes
+results <- DGEList(counts) # identifies differentially expressed genes
 head(results)
+results
+#View(results)
 
 ## PREPROCESSING ###############################################################
 
 results <- calcNormFactors(results) # calculates normalisation factors 
+results
 
 ## filtering results
 
-keep <- filterByExpr(results, min.count = 10)
-filtered <- results[keep, , keep.lib.sizes = FALSE]
+cutoff <- 10 
+drop <- which(apply(cpm(results),1,max) < cutoff)
+d <- results[-drop,]
+dim(d)
+
+#set sample names
+
+sample_names <- colnames(counts)
+sample_names
 
 ## Voom transformation to make data suitable for Limma
 
