@@ -24,7 +24,7 @@ The folder named *old_data* contains the data and related files for the initiall
 
 ### Tutorials that assisted in the production of the Limma-Voom script:
 * ["Differential Expression with Limma-Voom"](https://ucdavis-bioinformatics-training.github.io/2018-June-RNA-Seq-Workshop/thursday/DE.html)
-* 
+* ["DEG isolation using limma voom | A Rstudio Tutorial"](https://www.youtube.com/watch?v=z36fu178jIQ)
 
 ## Enrichment Analysis
 
