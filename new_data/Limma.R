@@ -11,6 +11,7 @@
 
 library(edgeR)
 library(limma)
+library(ggplot2)
 
 ## DATA ORGANISATION ###########################################################
 
@@ -96,6 +97,20 @@ fit <- eBayes(fit)
 
 results <- topTable(fit, coef = 2, adjust.method = "BH", number = Inf) # extracts a table of the top ranked genes from a linear model fit
 
-significant_genes <- results[results$adj.P.Val < 0.05, ]
+significant_genes <- results[results$adj.P.Val < 0.05, ] # genes with an adjusted p value of below 0.05
 
-write.csv(results, "limma_differential_expression_results.csv", row.names = TRUE)
+write.csv(results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
+
+## VISUALISING THE RESULTS ########################################
+
+## volcano plot
+
+results$significant <- results$adj.P.Val < 0.05 & abs(results$logFC) > 1 # filtering by adjusted p value and log2fold change
+
+dev.off() # resetting the graphics system. Ensures that the following plot works.
+
+ggplot(results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)) +
+  geom_point(alpha = 0.6) +
+  scale_color_manual(values = c("black", "red")) +
+  labs(title = "Volcano Plot", x = "Log2 Fold Change", y = "-log10 Adjusted P-value") +
+  theme_minimal()
