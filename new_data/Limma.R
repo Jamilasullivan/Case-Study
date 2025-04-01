@@ -30,10 +30,6 @@ rownames(counts)[duplicated(rownames(counts))] # check duplicate names
 head(counts) # get first columns of the table
 dim(counts) # get count of rows
 
-## converting counts data for use with Limma 
-
-#counts <- voom(counts, design, plot = TRUE)
-
 ## load metadata info
 
 metadata <- read.csv("Metadata2.csv", row.names = 1) # read in metadata with sample IDs as row names
@@ -114,3 +110,10 @@ ggplot(results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)) +
   scale_color_manual(values = c("black", "red")) +
   labs(title = "Volcano Plot", x = "Log2 Fold Change", y = "-log10 Adjusted P-value") +
   theme_minimal()
+
+## beginning of pathway analysis
+
+library(clusterProfiler)
+library(org.Mm.eg.db)
+ego <- enrichGO(gene = rownames(significant_genes), OrgDb = org.Mm.eg.db, keyType = "ENSEMBL", ont = "BP")
+dotplot(ego)
