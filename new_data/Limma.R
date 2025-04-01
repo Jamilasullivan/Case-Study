@@ -65,14 +65,14 @@ results
 ## PREPROCESSING ###############################################################
 
 results <- calcNormFactors(results) # calculates normalisation factors 
-results
+results$samples
 
 ## filtering results
 
 cutoff <- 10 
 drop <- which(apply(cpm(results),1,max) < cutoff)
-d <- results[-drop,]
-dim(d)
+filtered <- results[-drop,]
+dim(filtered)
 
 #set sample names
 
@@ -81,10 +81,21 @@ sample_names
 
 ## Voom transformation to make data suitable for Limma
 
-filtered <- voom(filtered, plot = TRUE)
+design <- model.matrix(~ metadata$Condition) # creates the design of the analysis
+filtered <- voom(filtered, design, plot = TRUE) # log transformation and estimates mean-variance trends
 
-# create design groups
+## fitting the linear model
 
-design <- model.matrix(~ 0 + metadata$Condition)
-colnames(design) <- c("Control", "Treatment")
-head(design)
+fit <- lmFit(filtered, design) # fits linear mode for each gene
+
+## emperical Baysian smoothing
+
+fit <- eBayes(fit)
+
+## EXTRACTING DIFFERENTIALLY EXPRESSED GENES #####################
+
+results <- topTable(fit, coef = 2, adjust.method = "BH", number = Inf) # extracts a table of the top ranked genes from a linear model fit
+
+significant_genes <- results[results$adj.P.Val < 0.05, ]
+
+write.csv(results, "limma_differential_expression_results.csv", row.names = TRUE)
