@@ -12,9 +12,12 @@
 library(edgeR)
 library(limma)
 library(ggplot2)
+<<<<<<< HEAD
 library(EnhancedVolcano)
 library(org.Mm.eg.db)    # Mouse annotation package
 library(AnnotationDbi)
+=======
+>>>>>>> df04795a12219b2f6097e0c94759b5fc71fce44b
 
 ## DATA ORGANISATION ###########################################################
 
@@ -99,6 +102,7 @@ limma_fit <- eBayes(limma_fit)
 limma_results <- topTable(limma_fit, coef = 2, adjust.method = "BH", number = Inf) # extracts a table of the top ranked genes from a linear model fit
 #View(limma_results)
 
+<<<<<<< HEAD
 limma_significant_genes <- limma_results[limma_results$adj.P.Val < 0.05, ] # genes with an adjusted p value of below 0.05
 
 write.csv(limma_results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
@@ -239,11 +243,27 @@ limma_results$significant <- limma_results$adj.P.Val < 0.05 & abs(limma_results$
 dev.off() # resetting the graphics system. Ensures that the following plot works.
 
 ggplot(limma_results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)) +
+=======
+significant_genes <- results[results$adj.P.Val < 0.05, ] # genes with an adjusted p value of below 0.05
+
+write.csv(results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
+
+## VISUALISING THE RESULTS ########################################
+
+## volcano plot
+
+results$significant <- results$adj.P.Val < 0.05 & abs(results$logFC) > 1 # filtering by adjusted p value and log2fold change
+
+dev.off() # resetting the graphics system. Ensures that the following plot works.
+
+ggplot(results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)) +
+>>>>>>> df04795a12219b2f6097e0c94759b5fc71fce44b
   geom_point(alpha = 0.6) +
   scale_color_manual(values = c("black", "red")) +
   labs(title = "Volcano Plot", x = "Log2 Fold Change", y = "-log10 Adjusted P-value") +
   theme_minimal()
 
+<<<<<<< HEAD
 ## order genes and extract top 10
 
 limma_results_ordered <- limma_results[order(limma_results$adj.P.Val),]
@@ -263,10 +283,13 @@ EnhancedVolcano(
 )
 
 limma_results
+=======
+>>>>>>> df04795a12219b2f6097e0c94759b5fc71fce44b
 ## beginning of pathway analysis
 
 library(clusterProfiler)
 library(org.Mm.eg.db)
+<<<<<<< HEAD
 ego <- enrichGO(gene = rownames(limma_significant_genes), OrgDb = org.Mm.eg.db, keyType = "ENSEMBL", ont = "BP")
 dotplot(ego)
 
@@ -302,3 +325,7 @@ make_unique_with_underscore <- function(x) {
 
 duplicates <- make_unique_with_underscore(limma_gene_symbols$limma_gene_symbols)
 duplicates[grep("\\_", duplicates)] 
+=======
+ego <- enrichGO(gene = rownames(significant_genes), OrgDb = org.Mm.eg.db, keyType = "ENSEMBL", ont = "BP")
+dotplot(ego)
+>>>>>>> df04795a12219b2f6097e0c94759b5fc71fce44b
