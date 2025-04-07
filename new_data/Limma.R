@@ -6,18 +6,18 @@
 #  install.packages("BiocManager")
 
 #BiocManager::install("limma")
+BiocManager::install("ComplexHeatmap")
 
 ## loading packages
 
 library(edgeR)
 library(limma)
 library(ggplot2)
-<<<<<<< HEAD
 library(EnhancedVolcano)
 library(org.Mm.eg.db)    # Mouse annotation package
 library(AnnotationDbi)
-=======
->>>>>>> df04795a12219b2f6097e0c94759b5fc71fce44b
+library(pheatmap)
+library(ComplexHeatmap)
 
 ## DATA ORGANISATION ###########################################################
 
@@ -102,7 +102,6 @@ limma_fit <- eBayes(limma_fit)
 limma_results <- topTable(limma_fit, coef = 2, adjust.method = "BH", number = Inf) # extracts a table of the top ranked genes from a linear model fit
 #View(limma_results)
 
-<<<<<<< HEAD
 limma_significant_genes <- limma_results[limma_results$adj.P.Val < 0.05, ] # genes with an adjusted p value of below 0.05
 
 write.csv(limma_results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
@@ -242,33 +241,29 @@ limma_results$significant <- limma_results$adj.P.Val < 0.05 & abs(limma_results$
 
 dev.off() # resetting the graphics system. Ensures that the following plot works.
 
-ggplot(limma_results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)) +
-=======
-significant_genes <- results[results$adj.P.Val < 0.05, ] # genes with an adjusted p value of below 0.05
-
-write.csv(results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
+write.csv(limma_results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
 
 ## VISUALISING THE RESULTS ########################################
 
 ## volcano plot
 
-results$significant <- results$adj.P.Val < 0.05 & abs(results$logFC) > 1 # filtering by adjusted p value and log2fold change
+limma_results$significant <- limma_results$adj.P.Val < 0.05 & abs(limma_results$logFC) > 1 # filtering by adjusted p value and log2fold change
+
+limma_results # true and false column for significance of genes
 
 dev.off() # resetting the graphics system. Ensures that the following plot works.
 
-ggplot(results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)) +
->>>>>>> df04795a12219b2f6097e0c94759b5fc71fce44b
+ggplot(limma_results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)) +
   geom_point(alpha = 0.6) +
   scale_color_manual(values = c("black", "red")) +
   labs(title = "Volcano Plot", x = "Log2 Fold Change", y = "-log10 Adjusted P-value") +
   theme_minimal()
 
-<<<<<<< HEAD
 ## order genes and extract top 10
 
 limma_results_ordered <- limma_results[order(limma_results$adj.P.Val),]
 
-limma_top_hits <- limma_results_ordered[order(limma_results_ordered$adj.P.Val), ][1:200, ]
+limma_top_hits <- limma_results_ordered[order(limma_results_ordered$adj.P.Val), ][1:200, ] # top 200 significant genes by adjusted p value
 limma_top_hits <- row.names(limma_top_hits)
 limma_top_hits
 
@@ -283,49 +278,52 @@ EnhancedVolcano(
 )
 
 limma_results
-=======
->>>>>>> df04795a12219b2f6097e0c94759b5fc71fce44b
+
+## heatmaps 
+
+# Get top DE genes (e.g., adjusted p-value < 0.05)
+limma_results <- topTable(limma_fit, coef=1, number=Inf, adjust.method="BH", sort.by="P")
+
+# Filter for significant genes
+sig_genes <- limma_results[limma_results$adj.P.Val < 0.05, ]
+
+# Select top 50 most significant for heatmap
+top_genes <- head(rownames(sig_genes), 50)
+
+# Subset expression matrix
+heatmap_matrix <- limma_filtered[top_genes, ]
+heatmap_matrix
+
+colours <- colorRampPalette(rev(brewer.pal(9, "Reds")))(255)
+
+dev.off()
+
+pheatmap(
+  heatmap_matrix,
+  col = colours,
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  show_rownames = TRUE,
+  show_colnames = TRUE
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## beginning of pathway analysis
 
 library(clusterProfiler)
 library(org.Mm.eg.db)
-<<<<<<< HEAD
+
 ego <- enrichGO(gene = rownames(limma_significant_genes), OrgDb = org.Mm.eg.db, keyType = "ENSEMBL", ont = "BP")
 dotplot(ego)
-
-## CHECKING FOR REPEATING COLUMN NAMES #########################################
-
-make_unique_with_underscore <- function(x) {
-  # Initialize a vector to store unique names
-  unique_names <- character(length(x))
-  
-  # Create a named counter to track occurrences
-  counter <- list()
-  
-  for (i in seq_along(x)) {
-    name <- x[i]
-    
-    # Skip NA values by leaving them unchanged
-    if (is.na(name)) {
-      unique_names[i] <- NA
-    } else {
-      # Check if the name has been seen before
-      if (name %in% names(counter)) {
-        counter[[name]] <- counter[[name]] + 1
-        unique_names[i] <- paste0(name, "_", counter[[name]])
-      } else {
-        counter[[name]] <- 1  # Start counting from 1
-        unique_names[i] <- name
-      }
-    }
-  }
-  
-  return(unique_names)
-}
-
-duplicates <- make_unique_with_underscore(limma_gene_symbols$limma_gene_symbols)
-duplicates[grep("\\_", duplicates)] 
-=======
-ego <- enrichGO(gene = rownames(significant_genes), OrgDb = org.Mm.eg.db, keyType = "ENSEMBL", ont = "BP")
-dotplot(ego)
->>>>>>> df04795a12219b2f6097e0c94759b5fc71fce44b

@@ -270,3 +270,4 @@ EnhancedVolcano(
   FCcutoff = 2,
   pCutoff = 0.05
 ) # looks wrong because the negative binomial distribution model in DESeq cannot handle only 4 samples. Limma does a much better job for fewer samples.
+
