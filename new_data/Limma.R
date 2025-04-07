@@ -119,7 +119,7 @@ limma_gene_symbols <- mapIds(
 ) # changing ENSEMBL IDs to gene symbols
 
 limma_gene_symbols <- as.data.frame(limma_gene_symbols)
-View(limma_gene_symbols)
+#View(limma_gene_symbols)
 
 make_unique_with_underscore <- function(x) {
   # Initialize a vector to store unique names
@@ -156,7 +156,7 @@ limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicate
 head(limma_gene_symbols) # checking gene symbols
 #View(limma_gene_symbols)
 rownames(limma_significant_genes) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_significant_genes)) # changing the row names to the gene symbols
-View(limma_significant_genes)
+#View(limma_significant_genes)
 
 duplicated(rownames(limma_gene_symbols)) # check for duplicates
 rownames(limma_significant_genes)[duplicated(rownames(limma_gene_symbols))] # check duplicate names
@@ -185,7 +185,7 @@ limma_gene_symbols <- mapIds(
 ) # changing ENSEMBL IDs to gene symbols
 
 limma_gene_symbols <- as.data.frame(limma_gene_symbols)
-View(limma_gene_symbols)
+#View(limma_gene_symbols)
 
 make_unique_with_underscore <- function(x) {
   # Initialize a vector to store unique names
@@ -230,10 +230,7 @@ head(rownames(limma_significant_genes)) # checking the row names
 #View(limma_results)
 head(limma_results)
 
-## VISUALISING THE RESULTS ########################################
-
-## heatmaps
-
+## VISUALISING THE RESULTS #####################################################
 
 ## volcano plot
 
@@ -243,9 +240,9 @@ dev.off() # resetting the graphics system. Ensures that the following plot works
 
 write.csv(limma_results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
 
-## VISUALISING THE RESULTS ########################################
+## VISUALISING THE RESULTS #####################################################
 
-## volcano plot
+## VOLCANO PLOTS ###############################################################
 
 limma_results$significant <- limma_results$adj.P.Val < 0.05 & abs(limma_results$logFC) > 1 # filtering by adjusted p value and log2fold change
 
@@ -279,46 +276,77 @@ EnhancedVolcano(
 
 limma_results
 
-## heatmaps 
+## HEATMAPS ####################################################################
 
-# Get top DE genes (e.g., adjusted p-value < 0.05)
-limma_results <- topTable(limma_fit, coef=1, number=Inf, adjust.method="BH", sort.by="P")
+class(limma_filtered)
+limma_filtered <- as.data.frame(limma_filtered)
 
-# Filter for significant genes
+limma_ensembl_ids <- rownames(limma_filtered)
+
+limma_gene_symbols <- mapIds(
+  org.Mm.eg.db,
+  keys = limma_ensembl_ids,
+  column = "SYMBOL",
+  keytype = "ENSEMBL",
+  multiVals = "first"
+) # changing ENSEMBL IDs to gene symbols
+
+limma_gene_symbols <- as.data.frame(limma_gene_symbols)
+#View(limma_gene_symbols)
+
+limma_gene_symbols <- make_unique_with_underscore(limma_gene_symbols$limma_gene_symbols) # carries out the function on the gene symbols of the data frame
+limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicates were found
+
+head(limma_gene_symbols) # checking gene symbols
+#View(limma_gene_symbols)
+rownames(limma_filtered) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_filtered)) # changing the row names to the gene symbols
+#View(limma_results)
+
+duplicated(rownames(limma_gene_symbols)) # check for duplicates
+rownames(limma_filtered)[duplicated(rownames(limma_gene_symbols))] # check duplicate names
+
+head(rownames(limma_filtered)) # checking the row names
+#View(limma_results)
+head(limma_filtered)
+
+# Load required packages
+library(limma)
+library(pheatmap)
+library(RColorBrewer)
+
+# Get topTable from limma results
+limma_results <- topTable(limma_fit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "P")
+
+# Filter for significant genes (adjusted p-value < 0.05)
 sig_genes <- limma_results[limma_results$adj.P.Val < 0.05, ]
 
-# Select top 50 most significant for heatmap
-top_genes <- head(rownames(sig_genes), 50)
+# Select top 50 most significant genes
+top_genes <- head(rownames(sig_genes), 30)
 
-# Subset expression matrix
-heatmap_matrix <- limma_filtered[top_genes, ]
-heatmap_matrix
+# Subset expression matrix by top genes
+# (Make sure 'limma_filtered' contains log2 expression values and has matching rownames)
+heatmap_matrix <- limma_filtered[top_genes, , drop = FALSE]
 
+# Optional: Scale expression values across genes for better visualization
+heatmap_matrix <- t(scale(t(heatmap_matrix)))
+
+# Set up color palette
 colours <- colorRampPalette(rev(brewer.pal(9, "Reds")))(255)
 
-dev.off()
+# Clear any open graphical devices (optional but prevents issues)
+if (dev.cur() != 1) dev.off()
 
+# Draw the heatmap
 pheatmap(
   heatmap_matrix,
   col = colours,
   cluster_rows = TRUE,
   cluster_cols = TRUE,
   show_rownames = TRUE,
-  show_colnames = TRUE
+  show_colnames = TRUE,
+  fontsize_row = 8,
+  fontsize_col = 10
 )
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## beginning of pathway analysis
 
