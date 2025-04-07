@@ -1,10 +1,10 @@
 ## installing and loading necessary packages ###################################
 
-# only run the next two lines on first application of the script
+# only run the following installation lines on first application of the script
 #install.packages("BiocManager")
 #BiocManager::install("org.Mm.eg.db")
-BiocManager::install("apeglm", force = TRUE)
-BiocManager::install("EnhancedVolcano")
+#BiocManager::install("apeglm", force = TRUE)
+#BiocManager::install("EnhancedVolcano")
 
 # Loading packages
 
@@ -136,27 +136,27 @@ deseq_results_ordered["Siglecf", ] # there. The gene of interest.
 
 ## Step 1: filter based on adjusted p value
 
-filtered <- deseq_results_ordered %>% filter(deseq_results_ordered$padj < 0.05) # gives genes below 0.05 adjusted p value
+deseq_filtered <- deseq_results_ordered %>% filter(deseq_results_ordered$padj < 0.05) # gives genes below 0.05 adjusted p value
 
 ## Step 2: filter based on fold changes
 
-filtered <- filtered %>% filter(abs(filtered$log2FoldChange) > 1) # gives genes above a log2fold change of 1
+deseq_filtered <- deseq_filtered %>% filter(abs(deseq_filtered$log2FoldChange) > 1) # gives genes above a log2fold change of 1
 
 dim(deseq_results_ordered) # checks data
-dim(filtered) # checks data
+dim(deseq_filtered) # checks data
 
 ## Step 3: make queries
 
 ## Save the deseq result. We will save both the original data(res) and the filtered one(hits)
 
-write.csv(deseq_results, "all_deseq_results_sifglecf.csv") # saves DESeq results as a csv
-write.csv(filtered, "filtered_deseq_results_siglecf.csv") # saves filtered DESeq results as a csv
+write.csv(deseq_results, "DESeq_all_deseq_results_sifglecf.csv") # saves DESeq results as a csv
+write.csv(deseq_filtered, "DESeq_filtered_deseq_results_siglecf.csv") # saves filtered DESeq results as a csv
 
 ## save normalised read counts
 
-normalised_counts <- counts(dds, normalized = TRUE) # creates a new object where the counts data is normalised
-head(normalised_counts) # checks data
-write.csv(normalised_counts, "normalised_counts_siglecf.csv") # saves normalised counts as a csv
+deseq_normalised_counts <- counts(dds, normalized = TRUE) # creates a new object where the counts data is normalised
+head(deseq_normalised_counts) # checks data
+write.csv(deseq_normalised_counts, "DESeq_normalised_counts_siglecf.csv") # saves normalised counts as a csv
 
 ## VISUALISATION ###############################################################
 
@@ -168,12 +168,12 @@ plotDispEsts(dds) # plots the dispersion estimates
 
 # variance stabilisation transformation
 
-vsd <- vst(dds, blind = F) # creates an object of variance stabilised data
+deseq_vsd <- vst(dds, blind = F) # creates an object of variance stabilised data
 
 # use transformed values to create a PCA plot
 
-plotPCA(vsd, intgroup = c("Condition"), pcsToUse = 1:2) # PC1 explains 98% of variance
-plotPCA(vsd, intgroup = c("Condition"), pcsToUse = 2:3) # PC3 explains 0% of variance
+plotPCA(deseq_vsd, intgroup = c("Condition"), pcsToUse = 1:2) # PC1 explains 98% of variance
+plotPCA(deseq_vsd, intgroup = c("Condition"), pcsToUse = 2:3) # PC3 explains 0% of variance
 
 ## Heatmaps
 # R packgage: pheatmap
@@ -182,10 +182,10 @@ plotPCA(vsd, intgroup = c("Condition"), pcsToUse = 2:3) # PC3 explains 0% of var
 
 # generate the distance matrix
 
-sampleDists <- dist(t(assay(vsd)))
-sampleDistMatrix <- as.matrix(sampleDists)
-colnames(sampleDistMatrix)
-sampleDistMatrix
+deseq_sampleDists <- dist(t(assay(deseq_vsd)))
+deseq_sampleDistMatrix <- as.matrix(deseq_sampleDists)
+colnames(deseq_sampleDistMatrix)
+deseq_sampleDistMatrix
 
 # set colour scheme
 
@@ -193,9 +193,9 @@ colours <- colorRampPalette(rev(brewer.pal(9, "Reds")))(255)
 
 # generate the heatmap
 samples_heatmap <- pheatmap(
-  sampleDistMatrix,
-  clustering_distance_rows = sampleDists,
-  clustering_distance_cols = sampleDists,
+  deseq_sampleDistMatrix,
+  clustering_distance_rows = deseq_sampleDists,
+  clustering_distance_cols = deseq_sampleDists,
   col = colours,
   border_color = "transparent",
   cluster_cols = T,
@@ -211,50 +211,15 @@ top_hits <- deseq_results_ordered[order(deseq_results_ordered$padj), ][1:10, ]
 top_hits <- row.names(top_hits)
 top_hits
 
-rld <- rlog(dds, blind = FALSE)
+deseq_rld <- rlog(dds, blind = FALSE)
 
 pheatmap(
-  assay(rld)[top_hits, ],
+  assay(deseq_rld)[top_hits, ],
   cluster_rows = T,
   show_rownames = T,
   cluster_cols = T,
   fontsize = 8,
   color = colours2
-)
-
-annot_info <- as.data.frame(colData(dds)[, c('Condition')])
-pheatmap(
-  assay(rld)[top_hits, ],
-  cluster_rows = T,
-  show_rownames = T,
-  cluster_cols = T,
-  annotation_col = annot_info,
-  fontsize = 8,
-  color = colours2,
-) # not working
-
-pheatmap(
-  assay(rld)[top_hits, ],
-  cluster_rows = T,
-  show_rownames = T,
-  cluster_cols = T,
-  annotation_col = annot_info,
-  fontsize = 8,
-  color = colours2,
-  kmeans_k = 4
-) # k-means cluster analysis of the same data as the heatmap above
-
-pheatmap(
-  assay(rld)[top_hits, ],
-  cluster_rows = T,
-  show_rownames = T,
-  cluster_cols = T,
-  annotation_col = annot_info,
-  fontsize = 8,
-  color = colours2,
-  cutree_rows = 4,
-  cutree_cols = 5,
-  show_colnames = FALSE
 )
 
 # testing the top 30 genes
@@ -264,30 +229,12 @@ top_30 <- row.names(top_30)
 top_30
 
 pheatmap(
-  assay(rld)[top_30, ],
+  assay(deseq_rld)[top_30, ],
   show_rownames = T,
   fontsize = 8,
   color = colours2,
   show_colnames = F
 )
-# Heatmap of Z scores. We will use the top 10 genes.
-
-cal_z_score <- function(x) {
-  (x - mean(x)) / sd(x)
-}
-zscore_all <- t(apply(normalised_counts, 1, cal_z_score))
-zscore_subset <- zscore_all[top_hits, ]
-pheatmap(
-  zscore_subset,
-  cluster_rows = T,
-  cluster_cols = T,
-  annotation_col = annot_info,
-  fontsize = 8,
-  cutree_rows = 4,
-  cutree_cols = 5,
-  show_colnames = FALSE,
-  color = colours2
-) # doesn't work
 
 # MA plot
 
@@ -303,12 +250,12 @@ str(resLFC)
 ## other volcano
 
 deseq_results$symbol <- mapIds(
-  org.Hs.eg.db,
+  org.Mm.eg.db,
   keys = rownames(deseq_results),
   keytype = "SYMBOL",
   column = "SYMBOL"
 )
-filtered
+deseq_filtered
 deseq_results
 
 EnhancedVolcano(
@@ -322,4 +269,6 @@ EnhancedVolcano(
   labSize = 5,
   FCcutoff = 2,
   pCutoff = 0.05
-)
+) # looks wrong because the negative binomial distribution model in DESeq cannot handle only 4 samples. Limma does a much better job for fewer samples.
+
+resLFC
