@@ -103,9 +103,17 @@ limma_fit <- eBayes(limma_fit)
 limma_results <- topTable(limma_fit, coef = 2, adjust.method = "BH", number = Inf) # extracts a table of the top ranked genes from a linear model fit
 #View(limma_results)
 
-limma_significant_genes <- limma_results[limma_results$adj.P.Val < 0.05, ] # genes with an adjusted p value of below 0.05
+limma_significant_genes <- limma_results[limma_results$adj.P.Val < 0.05 & limma_results$logFC > 1, ] # genes with an adjusted p value of below 0.05
 
 write.csv(limma_results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
+
+write.csv(limma_significant_genes, "limma_significant_adjp0.05_logFC1.csv", row.names = TRUE) # saves the results in a csv file
+
+################################################################################
+################################################################################
+################### CORRECT TO HERE ############################################
+################################################################################
+################################################################################
 
 ## RENAMING ENSEMBL IDS AS GENE SYMBOLS ###########################
 
