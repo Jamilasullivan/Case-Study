@@ -6,7 +6,7 @@
 #  install.packages("BiocManager")
 
 #BiocManager::install("limma")
-BiocManager::install("ComplexHeatmap")
+#BiocManager::install("ComplexHeatmap")
 
 ## loading packages
 
@@ -18,6 +18,7 @@ library(org.Mm.eg.db)    # Mouse annotation package
 library(AnnotationDbi)
 library(pheatmap)
 library(ComplexHeatmap)
+library(RColorBrewer)
 
 ## DATA ORGANISATION ###########################################################
 
@@ -278,14 +279,23 @@ limma_results
 
 ## HEATMAPS ####################################################################
 
-class(limma_filtered)
-limma_filtered <- as.data.frame(limma_filtered)
+# limma_fit should come from previous lmFit() and eBayes()
+limma_results <- topTable(limma_fit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "P")
 
-limma_ensembl_ids <- rownames(limma_filtered)
+sig_genes <- limma_results[limma_results$adj.P.Val < 0.05 & limma_results$logFC > 1, ]
+
+top_genes <- head(rownames(sig_genes), 40)  # Change 30 to however many genes you want
+
+heatmap_matrix <- limma_filtered[top_genes, ]
+
+heatmap_matrix <- as.matrix(heatmap_matrix)
+#View(heatmap_matrix)
+
+heatmap_ensembl_ids <- rownames(heatmap_matrix)
 
 limma_gene_symbols <- mapIds(
   org.Mm.eg.db,
-  keys = limma_ensembl_ids,
+  keys = heatmap_ensembl_ids,
   column = "SYMBOL",
   keytype = "ENSEMBL",
   multiVals = "first"
@@ -299,44 +309,18 @@ limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicate
 
 head(limma_gene_symbols) # checking gene symbols
 #View(limma_gene_symbols)
-rownames(limma_filtered) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_filtered)) # changing the row names to the gene symbols
+rownames(heatmap_matrix) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_results)) # changing the row names to the gene symbols
 #View(limma_results)
 
 duplicated(rownames(limma_gene_symbols)) # check for duplicates
-rownames(limma_filtered)[duplicated(rownames(limma_gene_symbols))] # check duplicate names
+rownames(limma_significant_genes)[duplicated(rownames(limma_gene_symbols))] # check duplicate names
 
-head(rownames(limma_filtered)) # checking the row names
+head(rownames(heatmap_matrix)) # checking the row names
 #View(limma_results)
-head(limma_filtered)
+head(heatmap_matrix)
 
-# Load required packages
-library(limma)
-library(pheatmap)
-library(RColorBrewer)
-
-# Get topTable from limma results
-limma_results <- topTable(limma_fit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "P")
-
-# Filter for significant genes (adjusted p-value < 0.05)
-sig_genes <- limma_results[limma_results$adj.P.Val < 0.05, ]
-
-# Select top 50 most significant genes
-top_genes <- head(rownames(sig_genes), 30)
-
-# Subset expression matrix by top genes
-# (Make sure 'limma_filtered' contains log2 expression values and has matching rownames)
-heatmap_matrix <- limma_filtered[top_genes, , drop = FALSE]
-
-# Optional: Scale expression values across genes for better visualization
-heatmap_matrix <- t(scale(t(heatmap_matrix)))
-
-# Set up color palette
 colours <- colorRampPalette(rev(brewer.pal(9, "Reds")))(255)
 
-# Clear any open graphical devices (optional but prevents issues)
-if (dev.cur() != 1) dev.off()
-
-# Draw the heatmap
 pheatmap(
   heatmap_matrix,
   col = colours,
