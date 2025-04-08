@@ -98,9 +98,9 @@ limma_fit <- lmFit(limma_filtered, limma_design) # fits linear mode for each gen
 
 limma_fit <- eBayes(limma_fit)
 
-## EXTRACTING DIFFERENTIALLY EXPRESSED GENES #####################
+## EXTRACTING DIFFERENTIALLY EXPRESSED GENES ###################################
 
-limma_results <- topTable(limma_fit, coef = 2, adjust.method = "BH", number = Inf) # extracts a table of the top ranked genes from a linear model fit
+limma_results <- topTable(limma_fit, coef = 2, adjust.method = "BH", number = Inf) # extracts a table of the top ranked genes from a linear model fit. These are the results you need for volcano plots!
 #View(limma_results)
 
 limma_significant_genes <- limma_results[limma_results$adj.P.Val < 0.05 & limma_results$logFC > 1, ] # genes with an adjusted p value of below 0.05
@@ -115,9 +115,16 @@ write.csv(limma_significant_genes, "limma_significant_adjp0.05_logFC1.csv", row.
 ################################################################################
 ################################################################################
 
+## ordering significant genes
+
+limma_significant_genes_ordered <- limma_significant_genes[order(limma_significant_genes$adj.P.Val),]
+
+head(limma_significant_genes_ordered)
+#View(limma_significant_genes_ordered)
+
 ## RENAMING ENSEMBL IDS AS GENE SYMBOLS ###########################
 
-limma_ensembl_ids <- rownames(limma_significant_genes)
+limma_ensembl_ids <- rownames(limma_significant_genes_ordered)
 
 limma_gene_symbols <- mapIds(
   org.Mm.eg.db,
@@ -164,22 +171,17 @@ limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicate
 
 head(limma_gene_symbols) # checking gene symbols
 #View(limma_gene_symbols)
-rownames(limma_significant_genes) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_significant_genes)) # changing the row names to the gene symbols
+rownames(limma_significant_genes_ordered) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_significant_genes_ordered)) # changing the row names to the gene symbols
 #View(limma_significant_genes)
 
 duplicated(rownames(limma_gene_symbols)) # check for duplicates
 rownames(limma_significant_genes)[duplicated(rownames(limma_gene_symbols))] # check duplicate names
 
-head(rownames(limma_significant_genes)) # checking the row names
+head(rownames(limma_significant_genes_ordered)) # checking the row names
 #View(limma_results)
-head(limma_significant_genes) 
+head(limma_significant_genes_ordered) 
 
-## ordering significant genes
-
-limma_significant_genes_ordered <- limma_significant_genes[order(limma_significant_genes$adj.P.Val),]
-
-head(limma_significant_genes_ordered)
-#View(limma_significant_genes_ordered)
+## VOLCANO PLOTS ###############################################################
 
 ## changing the name in the normal results to make a volcano plot from
 
@@ -195,34 +197,6 @@ limma_gene_symbols <- mapIds(
 
 limma_gene_symbols <- as.data.frame(limma_gene_symbols)
 #View(limma_gene_symbols)
-
-make_unique_with_underscore <- function(x) {
-  # Initialize a vector to store unique names
-  unique_names <- character(length(x))
-  
-  # Create a named counter to track occurrences
-  counter <- list()
-  
-  for (i in seq_along(x)) {
-    name <- x[i]
-    
-    # Skip NA values by leaving them unchanged
-    if (is.na(name)) {
-      unique_names[i] <- NA
-    } else {
-      # Check if the name has been seen before
-      if (name %in% names(counter)) {
-        counter[[name]] <- counter[[name]] + 1
-        unique_names[i] <- paste0(name, "_", counter[[name]])
-      } else {
-        counter[[name]] <- 1  # Start counting from 1
-        unique_names[i] <- name
-      }
-    }
-  }
-  
-  return(unique_names)
-} # this function reassigns any duplicate values with a numbr following an underscore. e.g. *_1, *_2, *_3
 
 limma_gene_symbols <- make_unique_with_underscore(limma_gene_symbols$limma_gene_symbols) # carries out the function on the gene symbols of the data frame
 limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicates were found
@@ -265,13 +239,17 @@ ggplot(limma_results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)
   labs(title = "Volcano Plot", x = "Log2 Fold Change", y = "-log10 Adjusted P-value") +
   theme_minimal()
 
+## enhanced volcano plot
+
 ## order genes and extract top 10
 
 limma_results_ordered <- limma_results[order(limma_results$adj.P.Val),]
 
-limma_top_hits <- limma_results_ordered[order(limma_results_ordered$adj.P.Val), ][1:200, ] # top 200 significant genes by adjusted p value
+limma_top_hits <- limma_significant_genes_ordered[1:10, ] # top 30 significant genes by adjusted p value
 limma_top_hits <- row.names(limma_top_hits)
 limma_top_hits
+
+dev.off()
 
 EnhancedVolcano(
   limma_results,
@@ -279,31 +257,21 @@ EnhancedVolcano(
   y = 'adj.P.Val',
   lab = rownames(limma_results),
   selectLab = limma_top_hits,
+  labSize = 5,
   FCcutoff = 1,
   pCutoff = 0.05
 )
 
-limma_results
-
 ## HEATMAPS ####################################################################
 
-# limma_fit should come from previous lmFit() and eBayes()
-limma_results <- topTable(limma_fit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "P")
+top_genes <- head(rownames(limma_significant_genes_ordered), 10)  # Change 30 to however many genes you want
+top_genes
 
-sig_genes <- limma_results[limma_results$adj.P.Val < 0.05 & limma_results$logFC > 1, ]
-
-top_genes <- head(rownames(sig_genes), 40)  # Change 30 to however many genes you want
-
-heatmap_matrix <- limma_filtered[top_genes, ]
-
-heatmap_matrix <- as.matrix(heatmap_matrix)
-#View(heatmap_matrix)
-
-heatmap_ensembl_ids <- rownames(heatmap_matrix)
+limma_ensembl_ids <- rownames(limma_filtered)
 
 limma_gene_symbols <- mapIds(
   org.Mm.eg.db,
-  keys = heatmap_ensembl_ids,
+  keys = limma_ensembl_ids,
   column = "SYMBOL",
   keytype = "ENSEMBL",
   multiVals = "first"
@@ -317,17 +285,23 @@ limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicate
 
 head(limma_gene_symbols) # checking gene symbols
 #View(limma_gene_symbols)
-rownames(heatmap_matrix) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_results)) # changing the row names to the gene symbols
+rownames(limma_filtered) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_filtered)) # changing the row names to the gene symbols
 #View(limma_results)
 
 duplicated(rownames(limma_gene_symbols)) # check for duplicates
-rownames(limma_significant_genes)[duplicated(rownames(limma_gene_symbols))] # check duplicate names
+
+heatmap_matrix <- limma_filtered[top_genes, ]
+
+heatmap_matrix <- as.matrix(heatmap_matrix)
+View(heatmap_matrix)
 
 head(rownames(heatmap_matrix)) # checking the row names
 #View(limma_results)
 head(heatmap_matrix)
 
 colours <- colorRampPalette(rev(brewer.pal(9, "Reds")))(255)
+
+dev.off()
 
 pheatmap(
   heatmap_matrix,
@@ -338,12 +312,4 @@ pheatmap(
   show_colnames = TRUE,
   fontsize_row = 8,
   fontsize_col = 10
-)
-
-## beginning of pathway analysis
-
-library(clusterProfiler)
-library(org.Mm.eg.db)
-
-ego <- enrichGO(gene = rownames(limma_significant_genes), OrgDb = org.Mm.eg.db, keyType = "ENSEMBL", ont = "BP")
-dotplot(ego)
+) # creates a heatmap of the top 10 genes
