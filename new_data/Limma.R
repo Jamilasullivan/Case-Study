@@ -90,6 +90,8 @@ sample_names
 limma_design <- model.matrix(~ metadata$Condition) # creates the design of the analysis
 limma_filtered <- voom(limma_filtered, limma_design, plot = TRUE) # log transformation and estimates mean-variance trends
 
+expression_matrix <- limma_filtered$E
+
 ## fitting the linear model
 
 limma_fit <- lmFit(limma_filtered, limma_design) # fits linear mode for each gene
@@ -264,6 +266,10 @@ EnhancedVolcano(
 
 ## HEATMAPS ####################################################################
 
+annot_info <- as.data.frame(metadata$Condition)
+
+annotation_colors <- list(Group = c("Case" = "green", "Control" = "orange"))
+
 top_genes <- head(rownames(limma_significant_genes_ordered), 10)  # Change 30 to however many genes you want
 top_genes
 
@@ -293,7 +299,7 @@ duplicated(rownames(limma_gene_symbols)) # check for duplicates
 heatmap_matrix <- limma_filtered[top_genes, ]
 
 heatmap_matrix <- as.matrix(heatmap_matrix)
-View(heatmap_matrix)
+#View(heatmap_matrix)
 
 head(rownames(heatmap_matrix)) # checking the row names
 #View(limma_results)
@@ -303,13 +309,58 @@ colours <- colorRampPalette(rev(brewer.pal(9, "Reds")))(255)
 
 dev.off()
 
-pheatmap(
-  heatmap_matrix,
-  col = colours,
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  show_rownames = TRUE,
-  show_colnames = TRUE,
-  fontsize_row = 8,
-  fontsize_col = 10
+pheatmap(heatmap_matrix,
+         col = colours,
+         show_colnames = TRUE,
+         show_rownames = TRUE,
+         cutree_rows = 4,
+         cutree_cols = 2,
+         clustering_method = "complete",
+         fontsize_row = 8,
+         fontsize_col = 10,
+         annotation_col = annot_info,
+         annotation_colors = annotation_colors
+         ) # creates a heatmap of the top 10 genes
+
+## heatmap of z scores
+
+z_scores <- t(scale(t(expression_matrix)))
+z_scores
+
+limma_ensembl_ids <- rownames(z_scores)
+
+limma_gene_symbols <- mapIds(
+  org.Mm.eg.db,
+  keys = limma_ensembl_ids,
+  column = "SYMBOL",
+  keytype = "ENSEMBL",
+  multiVals = "first"
+) # changing ENSEMBL IDs to gene symbols
+
+limma_gene_symbols <- as.data.frame(limma_gene_symbols)
+#View(limma_gene_symbols)
+
+limma_gene_symbols <- make_unique_with_underscore(limma_gene_symbols$limma_gene_symbols) # carries out the function on the gene symbols of the data frame
+limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicates were found
+
+head(limma_gene_symbols) # checking gene symbols
+#View(limma_gene_symbols)
+rownames(z_scores) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(z_scores)) # changing the row names to the gene symbols
+#View(limma_results)
+
+duplicated(rownames(limma_gene_symbols)) # check for duplicates
+
+zscore_subset <- z_scores[top_genes,]
+
+pheatmap(heatmap_matrix,
+         col = colours,
+         show_colnames = TRUE,
+         show_rownames = TRUE,
+         cutree_rows = 4,
+         cutree_cols = 2,
+         clustering_method = "complete",
+         fontsize_row = 8,
+         fontsize_col = 10,
+         annotation_col = annot_info,
+         annotation_colors = annotation_colors
 ) # creates a heatmap of the top 10 genes
