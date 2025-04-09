@@ -103,7 +103,7 @@ limma_fit <- eBayes(limma_fit)
 limma_results <- topTable(limma_fit, coef = 2, adjust.method = "BH", number = Inf) # extracts a table of the top ranked genes from a linear model fit. These are the results you need for volcano plots!
 #View(limma_results)
 
-limma_significant_genes <- limma_results[limma_results$adj.P.Val < 0.05 & limma_results$logFC > 1, ] # genes with an adjusted p value of below 0.05
+limma_significant_genes <- limma_results[limma_results$adj.P.Val < 0.05 & abs(limma_results$logFC > 1), ] # genes with an adjusted p value of below 0.05
 
 write.csv(limma_results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
 
@@ -306,8 +306,8 @@ dev.off()
 pheatmap(
   heatmap_matrix,
   col = colours,
-  cluster_rows = TRUE,
-  cluster_cols = TRUE,
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
   show_rownames = TRUE,
   show_colnames = TRUE,
   fontsize_row = 8,
