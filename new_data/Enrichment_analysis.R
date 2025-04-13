@@ -12,6 +12,7 @@
 
 # intalling necessary programmes
 
+
 #BiocManager::install("clusterProfiler")
 #BiocManager::install("AnnotationDbi")
 #BiocManager::install("org.Mm.eg.db")
@@ -20,6 +21,16 @@
 #BiocManager::install("ReactomePA")
 #BiocManager::install("ggplot2")
 #install.packages("tibble")
+
+BiocManager::install("clusterProfiler")
+BiocManager::install("AnnotationDbi")
+BiocManager::install("org.Mm.eg.db")
+BiocManager::install("enrichplot")
+BiocManager::install("pathview")
+BiocManager::install("ReactomePA")
+BiocManager::install("ggplot2")
+install.packages("tibble")
+>>>>>>> d6aebcb34edb1fea96fb5cbb9875fab72afcea6f
 
 # loading packages
 
@@ -48,8 +59,8 @@ limma_filtered
 dim(limma_filtered)
 summary(limma_filtered)
 
-genes_to_test <- rownames(limma_filtered) # genes to test are the names of the genes in the filtered file
-print(genes_to_test)
+genes_to_test <- rownames(limma_filtered)
+print(genes_to_test)  
 
 #### GO ENRICHMENT ANALYSIS ###########################################
 
@@ -79,6 +90,8 @@ ego_MF <- enrichGO(gene = genes_to_test,
                    ont = "MF")
 head(ego_MF)
 #view(ego_MF)
+
+view(ego_MF)
 
 # plot results
 plot_egoBP <- plot(barplot(ego_BP, showCategory = 20, font.size = 5))
@@ -228,7 +241,11 @@ ggplot(plot_data2, aes(x = reorder(Description, setSize), y = setSize, fill = On
 
 #### GO ENRICHED PATHWAYS ####################################################
 
+<<<<<<< HEAD
 gene_id <-bitr(rownames(limma_filtered), 
+=======
+gene_id <-bitr(rownames(deseq_filtered), 
+>>>>>>> d6aebcb34edb1fea96fb5cbb9875fab72afcea6f
                fromType = "SYMBOL", 
                toType = "ENTREZID", 
                OrgDb= "org.Mm.eg.db")
@@ -266,7 +283,7 @@ gse_genes <- sort(gse_genes, decreasing = TRUE)
 summary(gse_genes)
 gse_genes
 
-gene_id <-bitr(rownames(limma_filtered), 
+gene_id <-bitr(rownames(limma_filtered),
                fromType = "SYMBOL", 
                toType = "ENTREZID",  
                OrgDb= "org.Mm.eg.db")
@@ -282,6 +299,17 @@ limma_filtered <- limma_filtered %>% filter(!is.na(ENTREZID))
 # Create the named vector for GSEA
 gse_genes <- limma_filtered$log2FoldChange
 names(gse_genes) <- limma_filtered$ENTREZID
+deseq_filtered
+
+deseq_filtered <- rownames_to_column(deseq_filtered, "SYMBOL")  # Convert rownames to a column
+deseq_filtered <- left_join(deseq_filtered, gene_id, by = "SYMBOL")  # Join to match ENTREZID
+
+# Remove rows with missing ENTREZID
+deseq_filtered <- deseq_filtered %>% filter(!is.na(ENTREZID))
+
+# Create the named vector for GSEA
+gse_genes <- deseq_filtered$log2FoldChange
+names(gse_genes) <- deseq_filtered$ENTREZID
 gse_genes <- sort(gse_genes, decreasing = TRUE)
 gse_genes
 summary(gse_genes)
@@ -307,7 +335,3 @@ gseaplot(gse_KEGG, geneSetID = 1)
 gseaplot(gse_KEGG, geneSetID = 2)
 gseaplot(gse_KEGG, geneSetID = 3)
 gseaplot(gse_KEGG, geneSetID = 4)
-
-
-# ggarange (ggpubR package)
-
