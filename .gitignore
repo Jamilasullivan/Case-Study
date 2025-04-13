@@ -2,6 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+<<<<<<< HEAD
 "your_filename_here" 
 "Mus_musculus.GRCm39.113.gtf" 
 "new_data/data/Mus_musculus.GRCm39.113.gtf" 
+=======
+>>>>>>> d6aebcb34edb1fea96fb5cbb9875fab72afcea6f
