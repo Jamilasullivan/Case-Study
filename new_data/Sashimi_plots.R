@@ -1,5 +1,6 @@
 ## PACKCAGES ###################################################################
 
+<<<<<<< HEAD
 #install.packages("BiocManager")
 #BiocManager::install("ggbio")
 #BiocManager::install("GenomicRanges")
@@ -11,6 +12,15 @@ library(ggbio)
 library(GenomicRanges)
 library(GenomicAlignments)
 library(GenomicFeatures)
+=======
+install.packages("BiocManager")
+BiocManager::install("ggbio")
+BiocManager::install("GenomicRanges")
+install.packages("ggplot2")
+
+library(ggbio)
+library(GenomicRanges)
+>>>>>>> d6aebcb34edb1fea96fb5cbb9875fab72afcea6f
 library(ggplot2)
 library(Rsamtools)
 library(rtracklayer)
