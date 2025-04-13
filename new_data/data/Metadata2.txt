@@ -1,0 +1,5 @@
+Sample_ID	Files	Condition
+SRR12650994	SRR12650994.markdup.featurecount	Control
+SRR12650995	SRR12650995.markdup.featurecount	Control
+SRR12650992	SRR12650992.markdup.featurecount	Case
+SRR12650993	SRR12650993.markdup.featurecount	Case
