@@ -121,7 +121,24 @@ goplot(ego_all)
 
 ##### GO network visualisation #####
 
-view(ego_all)
+## rank-based enrichment analysis on all genes involved
+
+limma_results2 <- read.csv("limma_differential_expression_results.csv", row.names = 1) # read in results file
+
+#data organisation
+limma_filtered2 <- limma_results2[order(-limma_results2$logFC),] # ordering data by descending log2foldchange
+limma_filtered2
+summary(limma_filtered2)
+#view(limma_filtered2)
+
+##### extract stat column #####
+
+gene_list <- limma_filtered2$logFC
+names(gene_list) <- rownames(limma_filtered2)
+as.data.frame(gene_list)
+gene_list
+
+#view(ego_all)
 
 cnet_ego_all <- cnetplot(ego_all, 
               showCategory = 10, 
