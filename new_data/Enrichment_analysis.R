@@ -55,7 +55,7 @@ summary(limma_filtered)
 
 genes_to_test <- rownames(limma_filtered)
 print(genes_to_test)  
-view(genes_to_test)
+#view(genes_to_test)
 
 ################################################################################
 ########################## GO ENRICHMENT ANALYSIS ##############################

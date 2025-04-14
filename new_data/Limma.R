@@ -272,6 +272,8 @@ annot_info <- as.data.frame(metadata$Condition)
 
 annotation_colors <- list(Group = c("Case" = "green", "Control" = "orange"))
 
+dim(limma_significant_genes_ordered)
+
 top_genes <- head(rownames(limma_significant_genes_ordered), 10)  # Change 30 to however many genes you want
 top_genes
 
@@ -323,6 +325,22 @@ pheatmap(heatmap_matrix,
          annotation_col = annot_info,
          annotation_colors = annotation_colors
          ) # creates a heatmap of the top 10 genes
+
+## heatmap of all genes
+
+colours2 <- colorRampPalette(c("red", "black", "green"))(255)
+
+df_limma_filtered <- as.data.frame(limma_filtered)
+
+pheatmap(df_limma_filtered,
+         col = colours2,
+         show_colnames = TRUE,
+         show_rownames = FALSE,
+         fontsize_row = 6,
+         fontsize_col = 10,
+         annotation_col = annot_info,
+         annotation_colors = annotation_colors
+) # this will take a while
 
 ## heatmap of z scores
 
