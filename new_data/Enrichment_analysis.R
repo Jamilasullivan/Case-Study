@@ -12,7 +12,6 @@
 
 # intalling necessary programmes
 
-
 #BiocManager::install("clusterProfiler")
 #BiocManager::install("AnnotationDbi")
 #BiocManager::install("org.Mm.eg.db")
@@ -20,18 +19,9 @@
 #BiocManager::install("pathview")
 #BiocManager::install("ReactomePA")
 #BiocManager::install("ggplot2")
+#BiocManager::install("ggarchery")
 #install.packages("tibble")
-
-BiocManager::install("clusterProfiler")
-BiocManager::install("AnnotationDbi")
-BiocManager::install("org.Mm.eg.db")
-BiocManager::install("enrichplot")
-BiocManager::install("pathview")
-BiocManager::install("ReactomePA")
-BiocManager::install("ggplot2")
-install.packages("tibble")
->>>>>>> d6aebcb34edb1fea96fb5cbb9875fab72afcea6f
-
+#BiocManager::install("enrichplot")
 # loading packages
 
 library(clusterProfiler)
@@ -44,6 +34,9 @@ library(pathview)
 library(ReactomePA)
 library(dplyr)
 library(tibble)
+library(enrichplot)
+library(GOplot)
+library(enrichplot)
 
 ## set working directory
 
@@ -62,9 +55,13 @@ summary(limma_filtered)
 genes_to_test <- rownames(limma_filtered)
 print(genes_to_test)  
 
-#### GO ENRICHMENT ANALYSIS ###########################################
+################################################################################
+########################## GO ENRICHMENT ANALYSIS ##############################
+################################################################################
 
-# biological processes
+## enrichGO looks for overrepresented terms in significant genes
+
+###### biological processes ######
 ego_BP <- enrichGO(gene = genes_to_test,
                    universe = names(genes_to_test),
                    keyType = "SYMBOL",
@@ -73,7 +70,7 @@ ego_BP <- enrichGO(gene = genes_to_test,
 head(ego_BP)
 #view(ego_BP)
 
-# cellular component
+##### cellular component #####
 ego_CC <- enrichGO(gene = genes_to_test,
                    universe = names(genes_to_test),
                    keyType = "SYMBOL",
@@ -82,7 +79,7 @@ ego_CC <- enrichGO(gene = genes_to_test,
 head(ego_CC)
 #view(ego_CC)
 
-# molecular function
+##### molecular function #####
 ego_MF <- enrichGO(gene = genes_to_test,
                    universe = names(genes_to_test),
                    keyType = "SYMBOL",
@@ -91,9 +88,15 @@ ego_MF <- enrichGO(gene = genes_to_test,
 head(ego_MF)
 #view(ego_MF)
 
-view(ego_MF)
+ego_all <- enrichGO(gene = genes_to_test,
+                    universe = names(genes_to_test),
+                    keyType = "SYMBOL",
+                    OrgDb = org.Mm.eg.db)
 
-# plot results
+head(ego_all)
+#view(ego_all)
+
+############################# plot results #####################################
 plot_egoBP <- plot(barplot(ego_BP, showCategory = 20, font.size = 5))
 plot_egoCC <- plot(barplot(ego_CC, showCategory = 20, font.size = 5))
 plot_egoMF <- plot(barplot(ego_MF, showCategory = 20, font.size = 5))
@@ -101,7 +104,74 @@ plot_egoMF <- plot(barplot(ego_MF, showCategory = 20, font.size = 5))
 combined_ego_plot <- plot_grid(plot_egoCC, plot_egoBP, plot_egoMF, ncol = 1)
 print(combined_ego_plot)
 
-## ggplot of less data 
+## barplot
+
+barplot(ego_all, showCategory=20)
+
+## dotplot
+
+dotplot(ego_all, showCategory=20)
+
+## GOplot
+
+goplot(ego_all)
+
+## enrichment map 
+
+cnetplot(ego_all, showCategory=20)
+
+## GO netwrok visualisation
+
+cnetplot(ego_all, categorySize="pvalue", foldChange=geneList)
+
+## circular plot
+
+circosplot(ego_all)
+
+# Install enrichplot if not already installed
+install.packages("enrichplot")
+
+# Load the package
+library(enrichplot)
+
+install.packages("circlize")
+library(circlize)
+
+packageVersion("enrichplot")
+# To update the package from GitHub if necessary (requires devtools)
+devtools::install_github("YuLab-SMU/enrichplot")
+library(enrichplot)
+
+# Update enrichplot and clusterProfiler packages
+install.packages("enrichplot")
+install.packages("clusterProfiler")
+
+
+# Load the libraries
+library(enrichplot)
+library(clusterProfiler)
+
+remove.packages("enrichplot")
+# Install devtools if it's not already installed
+install.packages("devtools")
+
+# Load devtools
+library(devtools)
+
+# Install the latest version of enrichplot from GitHub
+devtools::install_github("YuLab-SMU/enrichplot")
+
+# Check the version of enrichplot
+packageVersion("enrichplot")
+
+# Install remotes if you don't have it already
+install.packages("remotes")
+
+# Install enrichplot from GitHub using remotes
+remotes::install_github("YuLab-SMU/enrichplot", force = TRUE)
+
+ 
+##### ggplot of less data #####
 
 # Extract and filter the top 5 terms based on p.adjust for each ontology
 data_BP <- as.data.frame(ego_BP)
@@ -132,24 +202,30 @@ ggplot(plot_data, aes(x = reorder(Description, Count), y = Count, fill = Ontolog
   coord_flip()+
   theme()
 
-#### GENE SET ENRICHMENT ANALYSIS ############################
+################################################################################
+####################### GENE SET ENRICHMENT ANALYSIS ###########################
+################################################################################
+
+## rank-based enrichment analysis on all genes involved
+
+limma_results2 <- read.csv("limma_differential_expression_results.csv", row.names = 1) # read in results file
 
 #data organisation
-limma_filtered2 <- limma_filtered[order(-limma_filtered$logFC),] # ordering data by descending log2foldchange
+limma_filtered2 <- limma_results2[order(-limma_results2$logFC),] # ordering data by descending log2foldchange
 limma_filtered2
 summary(limma_filtered2)
 #view(limma_filtered2)
 
-## extract stat column
+##### extract stat column #####
 
 gene_list <- limma_filtered2$logFC
 names(gene_list) <- rownames(limma_filtered2)
 as.data.frame(gene_list)
 gene_list
 
-# gene set enrichment analysis
+######################### gene set enrichment analysis #########################
 
-# BP
+##### BP #####
 gse_BP <- gseGO(gene_list,
                 ont = "BP",
                 keyType = "SYMBOL",
@@ -157,7 +233,7 @@ gse_BP <- gseGO(gene_list,
 head(gse_BP)
 #view(gse_BP)
 
-# CC
+##### CC #####
 gse_CC <- gseGO(gene_list,
                 ont = "CC",
                 keyType = "SYMBOL",
@@ -165,17 +241,17 @@ gse_CC <- gseGO(gene_list,
 head(gse_CC)
 #view(gse_CC)
 
-## MF
+##### MF #####
 gse_MF <- gseGO(gene_list,
                 ont = "MF",
                 keyType = "SYMBOL",
                 OrgDb = "org.Mm.eg.db")
 head(gse_MF)
-view(gse_MF)
+#view(gse_MF)
 
-## plotting ##
+############################## PLOTTING ########################################
 
-#GSAE plots
+############################## GSAE plots ######################################
 
 # These may vary slightly for each different run of the code dues to adjusted p-values 
 
@@ -201,11 +277,11 @@ gseaplot(gse_MF, geneSetID = 5)
 gseaplot(gse_MF, geneSetID = 6)
 
 gene_list[1]
-gene_list[3202]
+gene_list[8000] # alter the number to see how long the list is
 
-# Plotting with ggplot2
+######################### Plotting with ggplot2 ################################
 
-# bar plot# bar plotrank()
+################################ bar plot ######################################
 
 data_BP <- as.data.frame(gse_BP)
 data_BP$Ontology <- "BP"
@@ -239,13 +315,9 @@ ggplot(plot_data2, aes(x = reorder(Description, setSize), y = setSize, fill = On
   coord_flip()+
   theme()
 
-#### GO ENRICHED PATHWAYS ####################################################
+########################## GO ENRICHED PATHWAYS ################################
 
-<<<<<<< HEAD
-gene_id <-bitr(rownames(limma_filtered), 
-=======
-gene_id <-bitr(rownames(deseq_filtered), 
->>>>>>> d6aebcb34edb1fea96fb5cbb9875fab72afcea6f
+gene_id <-bitr(rownames(limma_filtered),
                fromType = "SYMBOL", 
                toType = "ENTREZID", 
                OrgDb= "org.Mm.eg.db")
@@ -268,7 +340,7 @@ ggplot(KEGG_plot, aes(x = reorder(Description, Count), y = Count, fill = p.adjus
   coord_flip()+
   theme()
 
-## GENE SET PATHWAY ENRICHMENT #################################################
+######################## GENE SET PATHWAY ENRICHMENT ###########################
 
 # Create the gene list: log2 fold changes as values, Entrez IDs as names
 summary(limma_filtered)
@@ -335,3 +407,4 @@ gseaplot(gse_KEGG, geneSetID = 1)
 gseaplot(gse_KEGG, geneSetID = 2)
 gseaplot(gse_KEGG, geneSetID = 3)
 gseaplot(gse_KEGG, geneSetID = 4)
+
