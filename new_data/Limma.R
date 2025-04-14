@@ -225,9 +225,11 @@ dev.off() # resetting the graphics system. Ensures that the following plot works
 
 write.csv(limma_results, "limma_differential_expression_results.csv", row.names = TRUE) # saves the results in a csv file
 
-## VISUALISING THE RESULTS #####################################################
+################################################################################
+######################## VISUALISING THE RESULTS ###############################
+################################################################################
 
-## VOLCANO PLOTS ###############################################################
+######################### VOLCANO PLOTS ########################################
 
 limma_results$significant <- limma_results$adj.P.Val < 0.05 & abs(limma_results$logFC) > 1 # filtering by adjusted p value and log2fold change
 
@@ -241,9 +243,9 @@ ggplot(limma_results, aes(x = logFC, y = -log10(adj.P.Val), color = significant)
   labs(title = "Volcano Plot", x = "Log2 Fold Change", y = "-log10 Adjusted P-value") +
   theme_minimal()
 
-## enhanced volcano plot
+############################ enhanced volcano plot #############################
 
-## order genes and extract top 10
+## order genes and extract top 10 for labels
 
 limma_results_ordered <- limma_results[order(limma_results$adj.P.Val),]
 
@@ -264,13 +266,13 @@ EnhancedVolcano(
   pCutoff = 0.05
 )
 
-## HEATMAPS ####################################################################
+############################## HEATMAPS ########################################
 
 annot_info <- as.data.frame(metadata$Condition)
 
 annotation_colors <- list(Group = c("Case" = "green", "Control" = "orange"))
 
-top_genes <- head(rownames(limma_significant_genes_ordered), 10)  # Change 30 to however many genes you want
+top_genes <- head(rownames(limma_significant_genes_ordered), 30)  # Change 30 to however many genes you want
 top_genes
 
 limma_ensembl_ids <- rownames(limma_filtered)
@@ -316,7 +318,7 @@ pheatmap(heatmap_matrix,
          cutree_rows = 4,
          cutree_cols = 2,
          clustering_method = "complete",
-         fontsize_row = 8,
+         fontsize_row = 6,
          fontsize_col = 10,
          annotation_col = annot_info,
          annotation_colors = annotation_colors
@@ -338,7 +340,7 @@ limma_gene_symbols <- mapIds(
 ) # changing ENSEMBL IDs to gene symbols
 
 limma_gene_symbols <- as.data.frame(limma_gene_symbols)
-#View(limma_gene_symbols)
+View(limma_gene_symbols)
 
 limma_gene_symbols <- make_unique_with_underscore(limma_gene_symbols$limma_gene_symbols) # carries out the function on the gene symbols of the data frame
 limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicates were found
@@ -364,3 +366,29 @@ pheatmap(heatmap_matrix,
          annotation_col = annot_info,
          annotation_colors = annotation_colors
 ) # creates a heatmap of the top 10 genes
+
+###################### BOX PLOT FOR SELECTED GENES #############################
+
+gene <- "ENSMUSG00000039013" # this should be the gene you want to look at. It must match the rowname in the expression matrix
+
+#view(expression_matrix) # unhash to check the structure of the expression matrix
+
+"ENSMUSG00000039013" %in% rownames(expression_matrix)  # Checking the gene you want is in the expression matrix. TRUE means the gene exists.
+
+
+gene_boxplot <- data.frame(Expression = expression_matrix[gene, ],
+                 Condition = metadata$Condition) # creating the gene boxplot object
+
+ggplot(gene_boxplot, aes(x = Condition, y = Expression)) +
+  geom_boxplot(fill = "skyblue", color = "black", outlier.shape = 16, outlier.size = 3) +  # Customize boxplot
+  labs(title = paste("Expression of", gene),
+       x = "Condition", 
+       y = "Expression Level") +
+  theme_minimal() +  # Cleaner background
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),  # Center and bold the title
+    axis.text = element_text(size = 12),  # Adjust axis text size
+    axis.title = element_text(size = 14),  # Adjust axis title size
+    panel.grid.major = element_line(color = "gray90", size = 0.5)  # Subtle grid lines
+  )
+
