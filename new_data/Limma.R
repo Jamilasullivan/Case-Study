@@ -383,7 +383,7 @@ ggplot(gene_boxplot, aes(x = Condition, y = Expression)) +
   geom_boxplot(fill = "skyblue", color = "black", outlier.shape = 16, outlier.size = 3) +  # Customize boxplot
   labs(title = paste("Expression of", gene),
        x = "Condition", 
-       y = "Expression Level") +
+       y = "Expression Level") + # in this case, this is by log2-transformed data
   theme_minimal() +  # Cleaner background
   theme(
     plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),  # Center and bold the title
