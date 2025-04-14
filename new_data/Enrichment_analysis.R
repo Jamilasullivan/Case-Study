@@ -62,8 +62,11 @@ print(genes_to_test)
 ################################################################################
 
 ## enrichGO looks for overrepresented terms in significant genes.
+## enrich uses a filtered list of significant genes
+## Good for DEG analysis
 
-###### biological processes ######
+################ biological processes (overrepresented GO terms) ###############
+
 ego_BP <- enrichGO(gene = genes_to_test,
                    universe = names(genes_to_test),
                    keyType = "SYMBOL",
@@ -90,6 +93,7 @@ ego_MF <- enrichGO(gene = genes_to_test,
 head(ego_MF)
 #view(ego_MF)
 
+##### all enrichment terms together ######
 ego_all <- enrichGO(gene = genes_to_test,
                     universe = names(genes_to_test),
                     keyType = "SYMBOL",
@@ -121,7 +125,7 @@ goplot(ego_all)
 
 ##### GO network visualisation #####
 
-## rank-based enrichment analysis on all genes involved
+## the following lines produce the gene_list again to be able to add colour
 
 limma_results2 <- read.csv("limma_differential_expression_results.csv", row.names = 1) # read in results file
 
@@ -196,9 +200,37 @@ ggplot(plot_data, aes(x = reorder(Description, Count), y = Count, fill = Ontolog
   coord_flip()+
   theme()
 
+######################## Pathway enrichment analysis ###########################
+
+gene_id <-bitr(rownames(limma_filtered),
+               fromType = "SYMBOL", 
+               toType = "ENTREZID", 
+               OrgDb= "org.Mm.eg.db")
+
+gene_id <- gene_id$ENTREZID
+
+KEGG_all <- enrichKEGG(gene = gene_id,
+                       organism = "mmu")
+
+KEGG_plot <- KEGG_all[, c("Description", "Count", "p.adjust")]
+
+head(KEGG_all)
+nrow(KEGG_all)
+
+ggplot(KEGG_plot, aes(x = reorder(Description, Count), y = Count, fill = p.adjust)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "GO Term Enrichment",x = NULL, y = "Gene Count") +
+  theme_minimal_grid() +
+  scale_fill_gradient(low = "#003efc", high = "#C1CFFB") +
+  coord_flip()+
+  theme()
+
 ################################################################################
-###################### GO GENE SET ENRICHMENT ANALYSIS #########################
+################## GO GENE SET ENRICHMENT ANALYSIS (GSEA) ######################
 ################################################################################
+
+## GSEA takes ranked list of all genes
+## gse commands are good for overall trends
 
 ## rank-based enrichment analysis on all genes involved
 
@@ -208,7 +240,7 @@ limma_results2 <- read.csv("limma_differential_expression_results.csv", row.name
 limma_filtered2 <- limma_results2[order(-limma_results2$logFC),] # ordering data by descending log2foldchange
 limma_filtered2
 summary(limma_filtered2)
-#view(limma_filtered2)
+view(limma_filtered2)
 
 ##### extract stat column #####
 
@@ -247,7 +279,7 @@ gse_all <- gseGO(gene_list,
                  keyType = "SYMBOL",
                  OrgDb = "org.Mm.eg.db")
 head(gse_all)
-view(gse_all)
+#view(gse_all)
 
 ############################## PLOTTING ########################################
 
@@ -362,39 +394,16 @@ ggplot(plot_data2, aes(x = reorder(Description, setSize), y = setSize, fill = On
   coord_flip()+
   theme()
 
-########################## GO ENRICHED PATHWAYS ################################
-
-gene_id <-bitr(rownames(limma_filtered),
-               fromType = "SYMBOL", 
-               toType = "ENTREZID", 
-               OrgDb= "org.Mm.eg.db")
-
-gene_id <- gene_id$ENTREZID
-
-KEGG_all <- enrichKEGG(gene = gene_id,
-                   organism = "mmu")
-
-reactome_all <- enrichPathway(gene = gene_id,
-                              organism = "mmu")
-
-KEGG_plot <- KEGG[, c("Description", "Count", "p.adjust")]
-
-head(KEGG)
-nrow(KEGG)
-
-ggplot(KEGG_plot, aes(x = reorder(Description, Count), y = Count, fill = p.adjust)) +
-  geom_bar(stat = "identity", position = "stack") +
-  labs(title = "GO Term Enrichment",x = NULL, y = "Gene Count") +
-  theme_minimal_grid() +
-  scale_fill_gradient(low = "#003efc", high = "#C1CFFB") +
-  coord_flip()+
-  theme()
-
+################################################################################
 ######################## GENE SET PATHWAY ENRICHMENT ###########################
+################################################################################
+
+
 
 # Create the gene list: log2 fold changes as values, Entrez IDs as names
 summary(limma_filtered)
-gse_genes <- limma_filtered$log2FoldChange
+#view(limma_filtered)
+gse_genes <- limma_filtered$logFC
 
 # Ensure the gene list has Entrez gene IDs as names
 names(gse_genes) <- rownames(limma_filtered)
@@ -419,15 +428,18 @@ limma_filtered <- left_join(limma_filtered, gene_id, by = "SYMBOL")  # Join to m
 limma_filtered <- limma_filtered %>% filter(!is.na(ENTREZID))
 
 # Create the named vector for GSEA
-gse_genes <- limma_filtered$log2FoldChange
+gse_genes <- limma_filtered$logFC
 names(gse_genes) <- limma_filtered$ENTREZID
-deseq_filtered
+limma_filtered
+view(limma_filtered)
 
-deseq_filtered <- rownames_to_column(deseq_filtered, "SYMBOL")  # Convert rownames to a column
-deseq_filtered <- left_join(deseq_filtered, gene_id, by = "SYMBOL")  # Join to match ENTREZID
+limma_filtered <- as.data.frame(limma_filtered)
+
+limma_filtered <- rownames_to_column(limma_filtered, "SYMBOL")  # Convert rownames to a column
+limma_filtered <- left_join(limma_filtered, gene_id, by = "SYMBOL")  # Join to match ENTREZID
 
 # Remove rows with missing ENTREZID
-deseq_filtered <- deseq_filtered %>% filter(!is.na(ENTREZID))
+limma_filtered <- limma_filtered %>% filter(!is.na(ENTREZID))
 
 # Create the named vector for GSEA
 gse_genes <- deseq_filtered$log2FoldChange
