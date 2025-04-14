@@ -37,6 +37,7 @@ library(tibble)
 library(enrichplot)
 library(GOplot)
 library(enrichplot)
+library(stringr)
 
 ## set working directory
 
@@ -54,12 +55,13 @@ summary(limma_filtered)
 
 genes_to_test <- rownames(limma_filtered)
 print(genes_to_test)  
+view(genes_to_test)
 
 ################################################################################
 ########################## GO ENRICHMENT ANALYSIS ##############################
 ################################################################################
 
-## enrichGO looks for overrepresented terms in significant genes
+## enrichGO looks for overrepresented terms in significant genes.
 
 ###### biological processes ######
 ego_BP <- enrichGO(gene = genes_to_test,
@@ -97,81 +99,56 @@ head(ego_all)
 #view(ego_all)
 
 ############################# plot results #####################################
+
 plot_egoBP <- plot(barplot(ego_BP, showCategory = 20, font.size = 5))
 plot_egoCC <- plot(barplot(ego_CC, showCategory = 20, font.size = 5))
 plot_egoMF <- plot(barplot(ego_MF, showCategory = 20, font.size = 5))
 
 combined_ego_plot <- plot_grid(plot_egoCC, plot_egoBP, plot_egoMF, ncol = 1)
-print(combined_ego_plot)
+print(combined_ego_plot) # combines the top 20 results of all ontology terms into one plot object
 
-## barplot
+##### bar plot #####
 
 barplot(ego_all, showCategory=20)
 
-## dotplot
+##### dotplot #####
 
 dotplot(ego_all, showCategory=20)
 
-## GOplot
+##### GOplot #####
 
 goplot(ego_all)
 
-## enrichment map 
+##### GO network visualisation #####
 
-cnetplot(ego_all, showCategory=20)
+view(ego_all)
 
-## GO netwrok visualisation
+cnet_ego_all <- cnetplot(ego_all, 
+              showCategory = 10, 
+              circular = TRUE, # Makes the plot radial and cleaner
+              size_item = 0.8,
+              color_category = "#E9D37A",
+              color_edge = "grey",
+              size_edge = 0.4,
+              node_label = "category",
+              categorySize="pvalue", 
+              foldChange=gene_list) # Colors edges by category
 
-cnetplot(ego_all, categorySize="pvalue", foldChange=geneList)
+cnet_ego_all + 
+  labs(title = "GO Term – Gene Network", subtitle = "Top 10 Enriched GO Terms", size = "Number of\ngenes involved") +
+  theme_void(base_size = 10) +
+  theme(
+    plot.title = element_text(size = 16, hjust = 0.5),
+    plot.subtitle = element_text(size = 13, hjust = 0.5),
+    legend.title = element_text(size = 13),
+    legend.text = element_text(size = 11),
+  )
 
-## circular plot
+##### circular plot #####
 
-circosplot(ego_all)
-
-# Install enrichplot if not already installed
-install.packages("enrichplot")
-
-# Load the package
-library(enrichplot)
-
-install.packages("circlize")
-library(circlize)
-
-packageVersion("enrichplot")
-# To update the package from GitHub if necessary (requires devtools)
-devtools::install_github("YuLab-SMU/enrichplot")
-library(enrichplot)
-
-# Update enrichplot and clusterProfiler packages
-install.packages("enrichplot")
-install.packages("clusterProfiler")
-
-
-# Load the libraries
-library(enrichplot)
-library(clusterProfiler)
-
-remove.packages("enrichplot")
-# Install devtools if it's not already installed
-install.packages("devtools")
-
-# Load devtools
-library(devtools)
-
-# Install the latest version of enrichplot from GitHub
-devtools::install_github("YuLab-SMU/enrichplot")
-
-# Check the version of enrichplot
-packageVersion("enrichplot")
-
-# Install remotes if you don't have it already
-install.packages("remotes")
-
-# Install enrichplot from GitHub using remotes
-remotes::install_github("YuLab-SMU/enrichplot", force = TRUE)
-
+circosplot(ego_all) # doesn't work
  
-##### ggplot of less data #####
+######################## ggplot of less data ###################################
 
 # Extract and filter the top 5 terms based on p.adjust for each ontology
 data_BP <- as.data.frame(ego_BP)
@@ -203,7 +180,7 @@ ggplot(plot_data, aes(x = reorder(Description, Count), y = Count, fill = Ontolog
   theme()
 
 ################################################################################
-####################### GENE SET ENRICHMENT ANALYSIS ###########################
+###################### GO GENE SET ENRICHMENT ANALYSIS #########################
 ################################################################################
 
 ## rank-based enrichment analysis on all genes involved
@@ -249,35 +226,88 @@ gse_MF <- gseGO(gene_list,
 head(gse_MF)
 #view(gse_MF)
 
+gse_all <- gseGO(gene_list,
+                 keyType = "SYMBOL",
+                 OrgDb = "org.Mm.eg.db")
+head(gse_all)
+view(gse_all)
+
 ############################## PLOTTING ########################################
 
-############################## GSAE plots ######################################
+######################## GSAE plots for specific terms #########################
 
-# These may vary slightly for each different run of the code dues to adjusted p-values 
+# These may vary slightly for each different run of the code dues to adjusted p-values. Change the number following 'geneSetID' to the number of the term of interest in the object. 
 
-gseaplot(gse_BP, geneSetID = 1)   
-gseaplot(gse_BP, geneSetID = 2) 
-gseaplot(gse_BP, geneSetID = 3)
-gseaplot(gse_BP, geneSetID = 4)
-gseaplot(gse_BP, geneSetID = 5)
-gseaplot(gse_BP, geneSetID = 6)
+gseaplot2(gse_BP, geneSetID = 1, title = gse_all@result$Description[1])  
 
-gseaplot(gse_CC, geneSetID = 1) 
-gseaplot(gse_CC, geneSetID = 2)
-gseaplot(gse_CC, geneSetID = 3)
-gseaplot(gse_CC, geneSetID = 4) 
-gseaplot(gse_CC, geneSetID = 5)
-gseaplot(gse_CC, geneSetID = 6)
+gseaplot2(gse_CC, geneSetID = 1, title = gse_all@result$Description[1])
 
-gseaplot(gse_MF, geneSetID = 1) 
-gseaplot(gse_MF, geneSetID = 2)
-gseaplot(gse_MF, geneSetID = 3)
-gseaplot(gse_MF, geneSetID = 4)
-gseaplot(gse_MF, geneSetID = 5)
-gseaplot(gse_MF, geneSetID = 6)
+gseaplot2(gse_MF, geneSetID = 1, title = gse_all@result$Description[1])
+
+gseaplot2(gse_all, geneSetID = 1, title = gse_all@result$Description[1])
 
 gene_list[1]
 gene_list[8000] # alter the number to see how long the list is
+
+######################## GSAE plots for the full set ###########################
+
+##### ridge plot #####
+
+ridge_all <- ridgeplot(gse_all, showCategory = 20)
+
+ridge_all + 
+  scale_fill_gradient(low = "#FF4F4F", high = "#570000") +  # Blue gradient
+  labs(title = "GO Enrichment Ridge Plot",
+       x = "Enrichment Score",
+       y = "GO Term") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    legend.title = element_text(size = 13),
+    legend.text = element_text(size = 11),
+    panel.grid.major.y = element_blank(),  # Clean up background
+    panel.grid.minor = element_blank()
+  )
+
+##### dot plot #####
+
+dot_all <- dotplot(gse_all, showCategory = 20)$data
+
+ggplot(dot_all, aes(x = NES, 
+                     y = reorder(Description, NES), 
+                     size = setSize, 
+                     color = p.adjust)) +
+  geom_point() +
+  scale_color_gradient(low = "#56B1F7", high = "#132B43", name = "Adjusted p-value") +
+  scale_size_continuous(name = "Gene Set Size") +
+  labs(
+    title = "Top Enriched GO Terms (GSEA)",
+    x = "Normalized Enrichment Score (NES)",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    legend.title = element_text(size = 13),
+    legend.text = element_text(size = 11),
+    panel.grid.major.y = element_blank()
+  )
+
+##### heatmap #####
+
+heatplot_gse_all <- heatplot(gse_all, showCategory = 10)
+
+heatplot_gse_all + 
+  labs(title = "Top 10 Enriched GO Terms")  # Title for the plot
+
+##### enrichment map #####
+
+emapplot(gse_all, showCategory = 30) # doesn't work
+emapplot(pairwise_termsim(gse_all), showCategory = 30) # works
 
 ######################### Plotting with ggplot2 ################################
 
@@ -324,8 +354,11 @@ gene_id <-bitr(rownames(limma_filtered),
 
 gene_id <- gene_id$ENTREZID
 
-KEGG <- enrichKEGG(gene = gene_id,
+KEGG_all <- enrichKEGG(gene = gene_id,
                    organism = "mmu")
+
+reactome_all <- enrichPathway(gene = gene_id,
+                              organism = "mmu")
 
 KEGG_plot <- KEGG[, c("Description", "Count", "p.adjust")]
 

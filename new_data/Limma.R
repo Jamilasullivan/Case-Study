@@ -272,7 +272,7 @@ annot_info <- as.data.frame(metadata$Condition)
 
 annotation_colors <- list(Group = c("Case" = "green", "Control" = "orange"))
 
-top_genes <- head(rownames(limma_significant_genes_ordered), 30)  # Change 30 to however many genes you want
+top_genes <- head(rownames(limma_significant_genes_ordered), 10)  # Change 30 to however many genes you want
 top_genes
 
 limma_ensembl_ids <- rownames(limma_filtered)
