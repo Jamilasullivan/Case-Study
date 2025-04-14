@@ -399,7 +399,7 @@ gene_boxplot <- data.frame(Expression = expression_matrix[gene, ],
 
 ggplot(gene_boxplot, aes(x = Condition, y = Expression)) +
   geom_boxplot(fill = "skyblue", color = "black", outlier.shape = 16, outlier.size = 3) +  # Customize boxplot
-  labs(title = paste("Expression of", gene),
+  labs(title = paste(gene, "Expression"),
        x = "Condition", 
        y = "Expression Level") + # in this case, this is by log2-transformed data
   theme_minimal() +  # Cleaner background
