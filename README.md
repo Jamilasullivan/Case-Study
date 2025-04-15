@@ -7,11 +7,23 @@
 
 The task for this respository is to reanalyse the data collected in a previous study by Shin et al. (2022). Analysis was carried out from raw data processing, through to functional analysis.
 
-The folder named *new_data* contains the analysis of the data mentioned above. 
+The folder named *new_data* contains the analysis of the data mentioned above and all relevant scripts needed for future analysis. 
 
 The folder named *old_data* contains the data and related files for the initially provided data that was not possible to analyse effectively (Pan et al. 2021).
 
 ## Raw Data Processing
+
+The bash scripts used for this data processing can be found in the branch named *processing*. 
+
+In this branch you will find the following scripts which should be used in number order: 
+
+1. 1-QC.sh
+2. 2-star_index_genome.sh
+3. 3-star.sh
+4. 4-markduplicates.sh
+5. 5-featurecounts.sh
+
+The purpose of each of these scripts is outlined clearly in the report. 
 
 ## Differential Gene Expression Analysis
 
