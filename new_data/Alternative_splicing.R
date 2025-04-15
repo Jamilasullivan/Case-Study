@@ -94,7 +94,9 @@ ggplot(sig2_a3ss, aes(x = IncLevelDifference)) +
   ) + 
   xlim(-1,1) # more exon inclusion was seen in air pollution because more values were close to 1
 
-############################## VOLCANO PLOTS ##################################
+############################## VOLCANO PLOTS ###################################
+
+## volcano plots don't work massively well for this data
 
 se_rmats$logFDR <- -log10(se_rmats$FDR)
 se_rmats$IncLevelDifference <- as.numeric(se_rmats$IncLevelDifference)
@@ -110,128 +112,18 @@ ggplot(se_rmats, aes(x = IncLevelDifference, y = logFDR)) +
   geom_vline(xintercept = c(-0.1, 0.1), linetype = "dashed") +
   geom_hline(yintercept = -log10(0.05), linetype = "dashed")
 
-###############################################################################
-#################### SELECTING AN EVENT TO PLOT ###############################
-###############################################################################
+########################################################################################################### SASHIMI-STYLE PLOTS ################################
+################################################################################
 
-event <- se_rmats[1, ] # selecting the first row of the se data to plot as the event (this is an example)
-
-# Coordinates
-chrom <- event$chr
-strand <- event$strand
-exonStart <- event$exonStart_0base
-exonEnd <- event$exonEnd
-upstreamExonEnd <- event$upstreamES
-upstreamExonStart <- event$upstreamEE
-downstreamExonStart <- event$downstreamES
-downstreamExonEnd <- event$downstreamEE
-
-# Junction counts
-IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
-SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
-
-# Sum counts across replicates
-IJC_sum <- sum(IJC1)
-SJC_sum <- sum(SJC1)
-
-######################################################################################################### CREATING THE PLOT ##################################
-###############################################################################
-
-# Define exon rectangles
-exons <- data.frame(
-  xmin = c(upstreamExonStart, exonStart, downstreamExonStart),
-  xmax = c(upstreamExonEnd, exonEnd, downstreamExonEnd),
-  ymin = -0.1,
-  ymax = 0.1,
-  label = c("Upstream", "Skipped", "Downstream")
-)
-
-# Define arcs for junctions
-junctions <- data.frame(
-  x = c(upstreamExonEnd, upstreamExonEnd),
-  xend = c(exonStart, downstreamExonStart),
-  y = 0.1,
-  yend = 0.1,
-  count = c(IJC_sum, SJC_sum),
-  label = c("Inclusion", "Skipping")
-)
-
-# Plot
-ggplot() +
-  # Exon boxes
-  geom_rect(data = exons, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), fill = "skyblue") +
-  
-  # Arcs for splice junctions
-  geom_curve(data = junctions, 
-             aes(x = x, xend = xend, y = y, yend = yend), 
-             curvature = 0.3, linewidth = 1, color = "black") +
-  
-  # Junction count labels
-  geom_text(data = junctions, 
-            aes(x = (x + xend) / 2, y = y + 0.15, label = count),
-            size = 4) +
-  
-  theme_minimal() +
-  labs(title = "Sashimi-style Plot (rMATS SE Event)",
-       x = "Genomic Position", y = "") +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        panel.grid = element_blank())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Example: Select the first row of rMATS SE event
-event <- se_rmats[1, ] # Adjust for actual data
-
-# Coordinates from event
-chrom <- event$chr
-strand <- event$strand
-exonStart <- event$exonStart_0base
-exonEnd <- event$exonEnd
-upstreamExonEnd <- event$upstreamES
-upstreamExonStart <- event$upstreamEE
-downstreamExonStart <- event$downstreamES
-downstreamExonEnd <- event$downstreamEE
-
-# Junction counts (from your data)
-IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
-SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
-
-# Sum counts across replicates (adjust as needed)
-IJC_sum <- sum(IJC1)
-SJC_sum <- sum(SJC1)
-
-######################################################################################################### CREATING THE PLOT ##################################
-###############################################################################
+######################## SKIPPED EXON EVENTS ###################################
 
 se_rmats_ordered <- se_rmats %>%
   arrange(FDR)
-View(se_rmats_ordered)
+#View(se_rmats_ordered)
 head(se_rmats_ordered)
 
-# Subset the top 5 rows of the ordered se_rmats data
-se_rmats_subset <- se_rmats_ordered[1:5, ] # Adjust for actual data frame
+# Subset the top rows of the ordered se_rmats data
+se_rmats_subset <- se_rmats_ordered[1:2, ] # Adjust for actual data frame
 
 # List to store individual plots
 plot_list <- list()
@@ -250,15 +142,15 @@ for (i in 1:nrow(se_rmats_subset)) {
   downstreamExonStart <- event$downstreamES
   downstreamExonEnd <- event$downstreamEE
   
-  # Junction counts (from your data)
+  # Junction counts 
   IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
   SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
   
-  # Sum counts across replicates (adjust as needed)
+  # Sum junction counts 
   IJC_sum <- sum(IJC1)
   SJC_sum <- sum(SJC1)
   
-  # Define exon rectangles (positions and labels)
+  # Exon boxes
   exons <- data.frame(
     xmin = c(upstreamExonStart, exonStart, downstreamExonStart),
     xmax = c(upstreamExonEnd, exonEnd, downstreamExonEnd),
@@ -267,7 +159,7 @@ for (i in 1:nrow(se_rmats_subset)) {
     label = c("Upstream Exon", "Skipped Exon", "Downstream Exon")
   )
   
-  # Define arcs for junctions
+  # Define arcs
   junctions <- data.frame(
     x = c(upstreamExonEnd, upstreamExonEnd),
     xend = c(exonStart, downstreamExonStart),
@@ -281,14 +173,14 @@ for (i in 1:nrow(se_rmats_subset)) {
   plot <- ggplot() +
     # Exon boxes with custom fill color
     geom_rect(data = exons, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
-              fill = "#A1C9F4", color = "black", size = 0.5) +
+              fill = "#0473C7", color = "black", size = 0.5) +
     
     # Arcs for splice junctions with customization (color and line thickness)
     geom_curve(data = junctions, 
                aes(x = x, xend = xend, y = y, yend = yend), 
                curvature = 0.3, 
                linewidth = 1, 
-               color = "#FF6F61") +
+               color = "#B20101") +
     
     # Junction count labels (position, size, color)
     geom_text(data = junctions, 
@@ -296,25 +188,386 @@ for (i in 1:nrow(se_rmats_subset)) {
               size = 5, color = "black") +
     
     # Title and axis labels with gene name
-    labs(title = paste("Sashimi-style Plot \n(rMATS Skipped Exon Event)\nGene:", event$geneSymbol, chrom),
+    labs(title = paste("Sashimi-style Plot (SE Event)\nGene:", event$geneSymbol),
+         subtitle = paste("Chromosome:", chrom),
          x = "Genomic Position", y = "") +
     
     # Customizing the plot theme
     theme_minimal(base_size = 14) +
     theme(
-      axis.text.y = element_blank(),  # Remove y-axis ticks
+      axis.text.y = element_blank(), 
       axis.ticks.y = element_blank(),
-      panel.grid = element_blank(),  # Remove grid lines
-      plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
-      plot.subtitle = element_text(size = 14, hjust = 0.5),
-      legend.position = "none"  # Remove legend if not needed
+      panel.grid = element_blank(), 
+      plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 13, hjust = 0.5),
+      legend.position = "none"  
     )
   
   # Store plot in the list
   plot_list[[i]] <- plot
 }
 
-# If you want to view all plots
+grid.arrange(grobs = plot_list, ncol = 2)
 
-grid.arrange(grobs = plot_list, ncol = 2) # Adjust `ncol` as needed
+###################### MUTUALLY EXCLUSIVE EXON EVENTS ##########################
+
+mxe_rmats_ordered <- mxe_rmats %>%
+  arrange(FDR)
+#View(mxe_rmats_ordered)
+head(mxe_rmats_ordered)
+
+# Subset the top rows of the ordered mxe_rmats data
+mxe_rmats_subset <- mxe_rmats_ordered[1:2, ]
+
+# List to store plots
+plot_list <- list()
+
+# Loop over each MXE event
+for (i in 1:nrow(mxe_rmats_subset)) {
+  event <- mxe_rmats_subset[i, ]
+  
+  # Coordinates
+  chrom <- event$chr
+  strand <- event$strand
+  exon1_start <- event$X1stExonStart_0base
+  exon1_end <- event$X1stExonEnd
+  exon2_start <- event$X2ndExonStart_0base
+  exon2_end <- event$X2ndExonEnd
+  upstream_start <- event$upstreamEE
+  upstream_end <- event$upstreamES
+  downstream_start <- event$downstreamES
+  downstream_end <- event$downstreamEE
+  
+  # Junction counts
+  IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  
+  # Check for missing values in coordinates
+  if (any(is.na(c(upstream_end, exon1_start, exon2_start, downstream_start)))) {
+    message(paste("Skipping event", i, "due to missing coordinates"))
+    next
+  }
+  
+  # Sum junction counts
+  IJC_sum <- sum(IJC1)
+  SJC_sum <- sum(SJC1)
+  
+  # Exon boxes
+  exons <- data.frame(
+    xmin = c(upstream_start, exon1_start, exon2_start, downstream_start),
+    xmax = c(upstream_end, exon1_end, exon2_end, downstream_end),
+    ymin = -0.1,
+    ymax = 0.1,
+    label = c("Upstream", "Exon 1", "Exon 2", "Downstream")
+  )
+  
+  # Junction arcs
+  junctions <- data.frame(
+    x = c(upstream_end, upstream_end),
+    xend = c(exon1_start, exon2_start),
+    y = 0.1,
+    yend = 0.1,
+    count = c(IJC_sum, SJC_sum),
+    label = c("Inclusion", "Skipping")
+  )
+  
+  # Plot
+  plot <- ggplot() +
+    geom_rect(data = exons, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              fill = "#01B204", color = "black", size = 0.5) +
+    geom_curve(data = junctions,
+               aes(x = x, xend = xend, y = y, yend = yend),
+               curvature = 0.3, linewidth = 1, color = "#B20101") +
+    geom_text(data = junctions,
+              aes(x = (x + xend) / 2, y = y + 0.15, label = count),
+              size = 5, color = "black") +
+    labs(
+      title = paste("Sashimi-style Plot (MXE Event)\nGene:", event$geneSymbol),
+      subtitle = paste("Chromosome:", chrom),
+      x = "Genomic Position", y = ""
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      panel.grid = element_blank(),
+      plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 10, hjust = 0.5),
+      legend.position = "none"
+    )
+  
+  plot_list[[i]] <- plot
+}
+
+grid.arrange(grobs = plot_list, ncol = 2)
+
+#################### ALTERNATIVE 3' SPLICE SITE EVENTS #########################
+
+# Order the A3SS data by FDR
+a3ss_rmats_ordered <- a3ss_rmats %>%
+  arrange(FDR)
+
+# Subset the top rows of the ordered A3SS data (adjust the range as needed)
+a3ss_rmats_subset <- a3ss_rmats_ordered[1:2, ]  # Adjust based on your data
+
+# List to store plots
+plot_list <- list()
+
+# Loop over each A3SS event
+for (i in 1:nrow(a3ss_rmats_subset)) {
+  event <- a3ss_rmats_subset[i, ]
+  
+  # Coordinates
+  chrom <- event$chr
+  strand <- event$strand
+  exonStart <- event$longExonStart_0base
+  exonEnd <- event$longExonEnd
+  upstream_start <- event$flankingES
+  upstream_end <- event$flankingEE
+  downstream_start <- event$shortES
+  downstream_end <- event$shortEE
+  
+  # Junction counts (from your data)
+  IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  
+  # Check for missing values in coordinates
+  if (any(is.na(c(upstream_end, exonStart, downstream_start)))) {
+    message(paste("Skipping event", i, "due to missing coordinates"))
+    next
+  }
+  
+  # Sum counts
+  IJC_sum <- sum(IJC1)
+  SJC_sum <- sum(SJC1)
+  
+  # Define exon boxes
+  exons <- data.frame(
+    xmin = c(upstream_start, exonStart, downstream_start),
+    xmax = c(upstream_end, exonEnd, downstream_end),
+    ymin = -0.1,
+    ymax = 0.1,
+    label = c("Upstream", "Exon", "Downstream")
+  )
+  
+  # Define junction arcs
+  junctions <- data.frame(
+    x = c(upstream_end, upstream_end),
+    xend = c(exonStart, downstream_start),
+    y = 0.1,
+    yend = 0.1,
+    count = c(IJC_sum, SJC_sum),
+    label = c("Inclusion", "Skipping")
+  )
+  
+  # Plot
+  plot <- ggplot() +
+    geom_rect(data = exons, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              fill = "#8C019E", color = "black", size = 0.5) +
+    geom_curve(data = junctions,
+               aes(x = x, xend = xend, y = y, yend = yend),
+               curvature = 0.3, linewidth = 1, color = "#B20101") +
+    geom_text(data = junctions,
+              aes(x = (x + xend) / 2, y = y + 0.15, label = count),
+              size = 5, color = "black") +
+    labs(
+      title = paste("Sashimi-style Plot (A3SS Event)\nGene:", event$geneSymbol),
+      subtitle = paste("Chromosome:", chrom),
+      x = "Genomic Position", y = ""
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      panel.grid = element_blank(),
+      plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 10, hjust = 0.5),
+      legend.position = "none"
+    )
+  
+  plot_list[[i]] <- plot
+}
+
+grid.arrange(grobs = plot_list, ncol = 2)
+
+#################### ALTERNATIVE 5' SPLICE SITE EVENTS #########################
+
+# Order the A5SS data by FDR
+a5ss_rmats_ordered <- a5ss_rmats %>%
+  arrange(FDR)
+
+# Subset the top rows of the ordered A5SS data (adjust the range as needed)
+a5ss_rmats_subset <- a5ss_rmats_ordered[1:2, ]  # Adjust based on your data
+
+# List to store plots
+plot_list <- list()
+
+# Loop over each A5SS event
+for (i in 1:nrow(a5ss_rmats_subset)) {
+  event <- a5ss_rmats_subset[i, ]
+  
+  # Coordinates
+  chrom <- event$chr
+  strand <- event$strand
+  exonStart <- event$longExonStart_0base
+  exonEnd <- event$longExonEnd
+  upstream_start <- event$flankingES
+  upstream_end <- event$flankingEE
+  downstream_start <- event$shortES
+  downstream_end <- event$shortEE
+  
+  # Junction counts 
+  IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  
+  # Check for missing values in coordinates
+  if (any(is.na(c(upstream_end, exonStart, downstream_start)))) {
+    message(paste("Skipping event", i, "due to missing coordinates"))
+    next
+  }
+  
+  # Sum junction counts
+  IJC_sum <- sum(IJC1)
+  SJC_sum <- sum(SJC1)
+  
+  # Exon boxes
+  exons <- data.frame(
+    xmin = c(upstream_start, exonStart, downstream_start),
+    xmax = c(upstream_end, exonEnd, downstream_end),
+    ymin = -0.1,
+    ymax = 0.1,
+    label = c("Upstream", "Exon", "Downstream")
+  )
+  
+  # Junction arcs
+  junctions <- data.frame(
+    x = c(upstream_end, upstream_end),
+    xend = c(exonStart, downstream_start),
+    y = 0.1,
+    yend = 0.1,
+    count = c(IJC_sum, SJC_sum),
+    label = c("Inclusion", "Skipping")
+  )
+  
+  # Plot
+  plot <- ggplot() +
+    geom_rect(data = exons, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              fill = "#FDD91E", color = "black", size = 0.5) +
+    geom_curve(data = junctions,
+               aes(x = x, xend = xend, y = y, yend = yend),
+               curvature = 0.3, linewidth = 1, color = "#B20101") +
+    geom_text(data = junctions,
+              aes(x = (x + xend) / 2, y = y + 0.15, label = count),
+              size = 5, color = "black") +
+    labs(
+      title = paste("Sashimi-style Plot (A5SS Event)\nGene:", event$geneSymbol),
+      subtitle = paste("Chromosome:", chrom),
+      x = "Genomic Position", y = ""
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      panel.grid = element_blank(),
+      plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 10, hjust = 0.5),
+      legend.position = "none"
+    )
+  
+  plot_list[[i]] <- plot
+}
+
+library(gridExtra)
+grid.arrange(grobs = plot_list, ncol = 2)
+
+
+######################## RETAINED INTRON EVENTS ################################
+
+# Order the RI data by FDR
+ri_rmats_ordered <- ri_rmats %>%
+  arrange(FDR)
+
+# Subset the top rows of the ordered RI data
+ri_rmats_subset <- ri_rmats_ordered[1:2, ]  # Adjust based on your data
+
+# List to store plots
+plot_list <- list()
+
+# Loop over each RI event
+for (i in 1:nrow(ri_rmats_subset)) {
+  event <- ri_rmats_subset[i, ]
+  
+  # Coordinates
+  chrom <- event$chr
+  strand <- event$strand
+  exonStart <- event$riExonStart_0base
+  exonEnd <- event$riExonEnd
+  upstream_start <- event$upstreamES
+  upstream_end <- event$upstreamEE
+  downstream_start <- event$downstreamES
+  downstream_end <- event$downstreamEE
+  
+  # Junction counts
+  IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  
+  # Check for missing values in coordinates
+  if (any(is.na(c(upstream_end, exonStart, downstream_start)))) {
+    message(paste("Skipping event", i, "due to missing coordinates"))
+    next
+  }
+  
+  # Sum junction counts
+  IJC_sum <- sum(IJC1)
+  SJC_sum <- sum(SJC1)
+  
+  # Exon boxes
+  exons <- data.frame(
+    xmin = c(upstream_start, exonStart, downstream_start),
+    xmax = c(upstream_end, exonEnd, downstream_end),
+    ymin = -0.1,
+    ymax = 0.1,
+    label = c("Upstream", "Retention Intron", "Downstream")
+  )
+  
+  # Junction arcs
+  junctions <- data.frame(
+    x = c(upstream_end, upstream_end),
+    xend = c(exonStart, downstream_start),
+    y = 0.1,
+    yend = 0.1,
+    count = c(IJC_sum, SJC_sum),
+    label = c("Inclusion", "Retention")
+  )
+  
+  # Plot
+  plot <- ggplot() +
+    geom_rect(data = exons, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              fill = "#00FAB4", color = "black", size = 0.5) +
+    geom_curve(data = junctions,
+               aes(x = x, xend = xend, y = y, yend = yend),
+               curvature = 0.3, linewidth = 1, color = "#B20101") +
+    geom_text(data = junctions,
+              aes(x = (x + xend) / 2, y = y + 0.15, label = count),
+              size = 5, color = "black") +
+    labs(
+      title = paste("Sashimi-style Plot (RI Event)\nGene:", event$geneSymbol),
+      subtitle = paste("Chromosome:", chrom),
+      x = "Genomic Position", y = ""
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      panel.grid = element_blank(),
+      plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 10, hjust = 0.5),
+      legend.position = "none"
+    )
+  
+  plot_list[[i]] <- plot
+}
+
+grid.arrange(grobs = plot_list, ncol = 2)
+
 
