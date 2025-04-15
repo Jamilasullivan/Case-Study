@@ -43,19 +43,30 @@ Analysis in R was completed using `R Studio 4.4.1`.
 Below is a list of all of the R packages used between the .... scripts.
 
 **Packages and Versions:**
-* ``
-* ``
-* ``
-* ``
-* ``
-* ``
-* ``
-* ``
-* ``
-* ``
-* ``
-* ``
-* ``
+* `edgeR 4.4.2`
+* `limma 3.62.2`
+* `ggplot 3.5.2`
+* `EnhancedVolcano 1.24.0`
+* `org.Mm.eg.db 3.20.0`
+* `AnnotationDbi 1.68.0`
+* `pheatmap 1.0.12`
+* `ComplexHeatmap 2.22.0`
+* `RColorBrewer 1.1-3`
+* `DESeq2 1.46.0`
+* `dplyr 1.1.4`
+* `ggrepel 0.9.6`
+* `clusterProfiler 4.14.6`
+* `enrichplot 1.27.5`
+* `cowplot 1.1.3`
+* `pathview 1.46.0`
+* `ReactomePA 1.50.0`
+* `tibble 3.2.1`
+* `GOplot 1.0.2`
+* `stringr 1.5.1`
+* `ggforce 0.4.2`
+* `tidyr 1.3.1`
+* `gridExtra 2.3`
+  
 ## References
 
 Pan, S. et al. 2021. Enhanced Transcriptomic Resilience following Increased Alternative Splicing and Differential Isoform Production between Air Pollution Conurbations. *Atmosphere* 12(8), p. 959. Available at: https://www.mdpi.com/2073-4433/12/8/959 
