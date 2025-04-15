@@ -31,14 +31,14 @@ The scripts used for differential gene expression are *DESeq2.R* and *Limma.R*. 
 
 These scripts are both capable of outputting results for use in the sebsequent scripts for filtering and visualisation of results.
 
-### Tutorials that assisted in the production of the DESeq2 script: 
+### Tutorials that assisted in the production of the DESeq2.R script: 
 * ["How I analyze RNA Seq Gene Expression data using DESeq2"](https://www.youtube.com/watch?v=kOlMcZujHHA)
 * ["RNAseq volcano plot of differentially expressed genes"](https://www.youtube.com/watch?v=vRr78s37CI4)
 * ["Draw Heatmap with Clusters Using pheatmap Package in R (4 Examples) | k-means, Row & Column Clusters"](https://www.youtube.com/watch?v=IjperDJ8IaI)
 * ["deseq tutorial & visualization. how to plot dispersion estimates"](https://www.youtube.com/watch?v=6EiT5GF5rns)
 * ["RNAseq tutorial – part 4 – Differential expression analysis with Deseq2"](https://www.youtube.com/watch?v=Ul-9s8YOOSk)
 
-### Tutorials that assisted in the production of the Limma-Voom script:
+### Tutorials that assisted in the production of the Limma.R script:
 * ["Differential Expression with Limma-Voom"](https://ucdavis-bioinformatics-training.github.io/2018-June-RNA-Seq-Workshop/thursday/DE.html)
 * ["DEG isolation using limma voom | A Rstudio Tutorial"](https://www.youtube.com/watch?v=z36fu178jIQ)
 
@@ -48,12 +48,13 @@ The *Gene_enrichment_lists.R* gives the opportunity to filter data by specific v
 
 The *Enrichment_analysis.R* script is capable of assessing and providing visualisations for related processes and pathways to a given gene list.
 
-### Tutorials that assisted in the production of this script: 
+### Tutorials that assisted in the production of the Enrichment_analysis.R script: 
 * ["Overview of enrichment analysis"](https://yulab-smu.top/biomedical-knowledge-mining-book/enrichment-overview.html)
 * ["Gene Set Enrichment Analysis (+ R tutorial)"](https://www.youtube.com/watch?v=B7F7a9NcGS0)
 * ["RNAseq analysis | Gene ontology (GO) in R"](https://www.youtube.com/watch?v=JPwdqdo_tRg)
 * ["3 minute GSEA tutorial in R | RNAseq tutorials"](https://www.youtube.com/watch?v=Mi6u4r0lJvo)
 * ["Gene Set Enrichment Analysis with ClusterProfiler"](https://learn.gencore.bio.nyu.edu/rna-seq-analysis/gene-set-enrichment-analysis/)
+* ["Visualization of Functional Enrichment Result"](https://bioconductor.riken.jp/packages/3.7/bioc/vignettes/enrichplot/inst/doc/enrichplot.html#references)
 
 ## Alternative Splicing Analysis
 
@@ -90,6 +91,7 @@ Below is a list of all of the R packages used between the .... scripts.
 * `ggforce 0.4.2`
 * `tidyr 1.3.1`
 * `gridExtra 2.3`
+* `ggupset 0.4.1`
   
 ## References
 
