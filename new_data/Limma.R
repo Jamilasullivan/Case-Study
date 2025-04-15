@@ -91,6 +91,7 @@ limma_design <- model.matrix(~ metadata$Condition) # creates the design of the a
 limma_filtered <- voom(limma_filtered, limma_design, plot = TRUE) # log transformation and estimates mean-variance trends
 
 expression_matrix <- limma_filtered$E
+#View(expression_matrix)
 
 ## fitting the linear model
 
@@ -326,20 +327,55 @@ pheatmap(heatmap_matrix,
          annotation_colors = annotation_colors
          ) # creates a heatmap of the top 10 genes
 
-## heatmap of all genes
+########## heatmap of all genes. Visulaising the overall sprea #################
+
+top_genes <- head(rownames(limma_significant_genes_ordered), 500)  # Change 1047 (all filtered significant genes) to however many genes you want.
+top_genes
+
+limma_ensembl_ids <- rownames(limma_filtered)
+
+limma_gene_symbols <- mapIds(
+  org.Mm.eg.db,
+  keys = limma_ensembl_ids,
+  column = "SYMBOL",
+  keytype = "ENSEMBL",
+  multiVals = "first"
+) # changing ENSEMBL IDs to gene symbols
+
+limma_gene_symbols <- as.data.frame(limma_gene_symbols)
+#View(limma_gene_symbols)
+
+limma_gene_symbols <- make_unique_with_underscore(limma_gene_symbols$limma_gene_symbols) # carries out the function on the gene symbols of the data frame
+limma_gene_symbols[grep("\\_", limma_gene_symbols)] # this checks what duplicates were found
+
+head(limma_gene_symbols) # checking gene symbols
+#View(limma_gene_symbols)
+rownames(limma_filtered) <- ifelse(!is.na(limma_gene_symbols), limma_gene_symbols, rownames(limma_filtered)) # changing the row names to the gene symbols
+#View(limma_results)
+
+duplicated(rownames(limma_gene_symbols)) # check for duplicates
+
+heatmap_matrix <- limma_filtered[top_genes, ]
+
+heatmap_matrix <- as.matrix(heatmap_matrix)
+#View(heatmap_matrix)
+
+head(rownames(heatmap_matrix)) # checking the row names
+#View(limma_results)
+head(heatmap_matrix)
 
 colours2 <- colorRampPalette(c("red", "black", "green"))(255)
 
-df_limma_filtered <- as.data.frame(limma_filtered)
-
-pheatmap(df_limma_filtered,
+pheatmap(heatmap_matrix,
          col = colours2,
          show_colnames = TRUE,
          show_rownames = FALSE,
          fontsize_row = 6,
          fontsize_col = 10,
          annotation_col = annot_info,
-         annotation_colors = annotation_colors
+         annotation_colors = annotation_colors,
+         cluster_cols = FALSE, 
+         cluster_rows = TRUE
 ) # this will take a while
 
 ## heatmap of z scores
