@@ -15,7 +15,7 @@ The folder named *old_data* contains the data and related files for the initiall
 
 The bash scripts used for this data processing can be found in the branch named *processing*. 
 
-In this branch you will find the following scripts which should be used in number order: 
+In this branch you will find the following scripts, which should be used in number order: 
 
 1. 1-QC.sh
 2. 2-star_index_genome.sh
@@ -26,6 +26,10 @@ In this branch you will find the following scripts which should be used in numbe
 The purpose of each of these scripts is outlined clearly in the report. 
 
 ## Differential Gene Expression Analysis
+
+The scripts used for differential gene expression are *DESeq2.R* and *Limma.R*. Which is used is dependent on your data set. The circumstances under which each script is appropriate is outlined in the report.
+
+These scripts are both capable of outputting results for use in the sebsequent scripts for filtering and visualisation of results.
 
 ### Tutorials that assisted in the production of the DESeq2 script: 
 * ["How I analyze RNA Seq Gene Expression data using DESeq2"](https://www.youtube.com/watch?v=kOlMcZujHHA)
@@ -40,6 +44,10 @@ The purpose of each of these scripts is outlined clearly in the report.
 
 ## Enrichment Analysis
 
+The *Gene_enrichment_lists.R* gives the opportunity to filter data by specific values and output these results as files to be saved locally. However, this script is not specifically linked to the other enrichment analysis script. 
+
+The *Enrichment_analysis.R* script is capable of assessing and providing visualisations for related processes and pathways to a given gene list.
+
 ### Tutorials that assisted in the production of this script: 
 * ["Overview of enrichment analysis"](https://yulab-smu.top/biomedical-knowledge-mining-book/enrichment-overview.html)
 * ["Gene Set Enrichment Analysis (+ R tutorial)"](https://www.youtube.com/watch?v=B7F7a9NcGS0)
@@ -48,6 +56,10 @@ The purpose of each of these scripts is outlined clearly in the report.
 * ["Gene Set Enrichment Analysis with ClusterProfiler"](https://learn.gencore.bio.nyu.edu/rna-seq-analysis/gene-set-enrichment-analysis/)
 
 ## Alternative Splicing Analysis
+
+Alternative splicing analysis was carried out using the nf-core/rnasplice pipeline (Ashmore et al. 2024). 
+
+The branch *alternative_splicing* contains the netflow config file used to run the pipeline and an annotated version to give a better idea of what the file is doing. 
 
 ## R Packages and Version Control
 Analysis in R was completed using `R Studio 4.4.1`.
@@ -80,6 +92,8 @@ Below is a list of all of the R packages used between the .... scripts.
 * `gridExtra 2.3`
   
 ## References
+
+Ashmore, J. et al. 2024. nf-core/rnasplice: nf-core/rnasplice 1.0.4 (1.0.4). Zenodo. doi: https://doi.org/10.5281/zenodo.15194198 
 
 Pan, S. et al. 2021. Enhanced Transcriptomic Resilience following Increased Alternative Splicing and Differential Isoform Production between Air Pollution Conurbations. *Atmosphere* 12(8), p. 959. Available at: https://www.mdpi.com/2073-4433/12/8/959 
 
