@@ -22,7 +22,8 @@
 #BiocManager::install("ggarchery")
 #install.packages("tibble")
 #BiocManager::install("enrichplot")
-# loading packages
+
+## loading packages
 
 library(clusterProfiler)
 library(org.Mm.eg.db)
@@ -38,6 +39,7 @@ library(enrichplot)
 library(GOplot)
 library(enrichplot)
 library(stringr)
+library(ggupset)
 
 ## set working directory
 
@@ -152,7 +154,7 @@ cnet_ego_all <- cnetplot(ego_all,
               color_edge = "grey",
               size_edge = 0.4,
               node_label = "category",
-              categorySize="pvalue", 
+              categorySize="p.adjust", 
               foldChange=gene_list) # Colors edges by category
 
 cnet_ego_all + 
@@ -165,9 +167,14 @@ cnet_ego_all +
     legend.text = element_text(size = 11),
   )
 
-##### circular plot #####
+#### or 
 
-circosplot(ego_all) # doesn't work
+ego_all2 <- simplify(ego_all)
+cnetplot(ego_all2, foldChange=gene_list) # use this to see all gene names but it can get messy.
+
+##### upset plot #####
+
+upsetplot(ego_all)
  
 ######################## ggplot of less data ###################################
 
@@ -224,6 +231,65 @@ ggplot(KEGG_plot, aes(x = reorder(Description, Count), y = Count, fill = p.adjus
   scale_fill_gradient(low = "#003efc", high = "#C1CFFB") +
   coord_flip()+
   theme()
+
+##### bar plot #####
+
+barplot(KEGG_all, showCategory=20)
+
+##### dotplot #####
+
+dotplot(KEGG_all, showCategory=20)
+
+##### GOplot #####
+
+kegg_res_readable <- setReadable(KEGG_all, OrgDb = org.Mm.eg.db, keyType = "ENTREZID")
+goplot(kegg_res_readable) # not working
+
+##### GO network visualisation #####
+
+## the following lines produce the gene_list again to be able to add colour
+
+limma_results2 <- read.csv("limma_differential_expression_results.csv", row.names = 1) # read in results file
+
+#data organisation
+limma_filtered2 <- limma_results2[order(-limma_results2$logFC),] # ordering data by descending log2foldchange
+limma_filtered2
+summary(limma_filtered2)
+#view(limma_filtered2)
+
+##### extract stat column #####
+
+gene_list <- limma_filtered2$logFC
+names(gene_list) <- rownames(limma_filtered2)
+as.data.frame(gene_list)
+gene_list
+
+#view(KEGG_all)
+
+cnet_KEGG_all <- cnetplot(KEGG_all, 
+                         showCategory = 10, 
+                         circular = TRUE, # Makes the plot radial and cleaner
+                         size_item = 0.8,
+                         color_category = "#E9D37A",
+                         color_edge = "grey",
+                         size_edge = 0.4,
+                         node_label = "category",
+                         categorySize="p.adjust", 
+                         foldChange=gene_list) # Colors edges by category
+
+cnet_KEGG_all + 
+  labs(title = "GO Term – Gene Network", subtitle = "Top 10 Enriched KEGG Pathways", size = "Number of\ngenes involved") +
+  theme_void(base_size = 10) +
+  theme(
+    plot.title = element_text(size = 16, hjust = 0.5),
+    plot.subtitle = element_text(size = 13, hjust = 0.5),
+    legend.title = element_text(size = 13),
+    legend.text = element_text(size = 11),
+  )
+
+##### upset plot #####
+
+upsetplot(KEGG_all)
 
 ################################################################################
 ################## GO GENE SET ENRICHMENT ANALYSIS (GSEA) ######################
