@@ -1,40 +1,44 @@
 ## LOAD PACKAGES ##############################################################
 
 #BiocManager::install("Gviz")
+#BiocManager::install("dzhang32/dasper")
 
 library(ggplot2)
 library(dplyr)
 library(ggforce)  # for arcs
 library(tidyr)
+library(gridExtra)
 
 ## SET WORKING DIRECTORY ######################################################
 
 setwd("C:/Users/jamsu/OneDrive - Cardiff University/University/Masters/Big Data Biology/Modules/BIT103. Case Study/NEW DATA - WORKING DIRECTORY/Case-Study/new_data/data")
 
-## READ IN AS DATA FROM RMATS #################################################
+###############################################################################
+##################### READ IN AS DATA FROM RMATS ##############################
+###############################################################################
 
 ## All data here is from the AIRP-CTRL 
 ## IncLevelDifference goes from condition 1 to condition 2 (<0 - higher exon skipping in condition 1. 0 = minimal difference in splicing). 
 
-## skipped exon results
+##### skipped exon results #####
 se_rmats <- read.table("SE.MATS.JC.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
-## mutually exclusive exon results
+##### mutually exclusive exon results #####
 mxe_rmats <- read.table("MXE.MATS.JC.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
-## alternative 3' splice site results 
+##### alternative 3' splice site results #####
 a3ss_rmats <- read.table("A3SS.MATS.JC.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
-## alternative 5' splice site results
+##### alternative 5' splice site results #####
 a5ss_rmats <- read.table("A5SS.MATS.JC.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
-## retained intron results
+##### retained intron results #####
 ri_rmats <- read.table("RI.MATS.JC.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
 ## PREVIEW OF ALL RESULTS FILES ###############################################
 
 head(se_rmats)
-view(se_rmats)
+#View(se_rmats)
 head(mxe_rmats)
 #view(mxe_rmats)
 head(a3ss_rmats)
@@ -173,4 +177,144 @@ ggplot() +
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
         panel.grid = element_blank())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Example: Select the first row of rMATS SE event
+event <- se_rmats[1, ] # Adjust for actual data
+
+# Coordinates from event
+chrom <- event$chr
+strand <- event$strand
+exonStart <- event$exonStart_0base
+exonEnd <- event$exonEnd
+upstreamExonEnd <- event$upstreamES
+upstreamExonStart <- event$upstreamEE
+downstreamExonStart <- event$downstreamES
+downstreamExonEnd <- event$downstreamEE
+
+# Junction counts (from your data)
+IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+
+# Sum counts across replicates (adjust as needed)
+IJC_sum <- sum(IJC1)
+SJC_sum <- sum(SJC1)
+
+######################################################################################################### CREATING THE PLOT ##################################
+###############################################################################
+
+se_rmats_ordered <- se_rmats %>%
+  arrange(FDR)
+View(se_rmats_ordered)
+head(se_rmats_ordered)
+
+# Subset the top 5 rows of the ordered se_rmats data
+se_rmats_subset <- se_rmats_ordered[1:5, ] # Adjust for actual data frame
+
+# List to store individual plots
+plot_list <- list()
+
+# Loop through each row (event) and generate individual plots
+for (i in 1:nrow(se_rmats_subset)) {
+  event <- se_rmats_subset[i, ] # Extract each event
+  
+  # Coordinates for the current event
+  chrom <- event$chr
+  strand <- event$strand
+  exonStart <- event$exonStart_0base
+  exonEnd <- event$exonEnd
+  upstreamExonEnd <- event$upstreamES
+  upstreamExonStart <- event$upstreamEE
+  downstreamExonStart <- event$downstreamES
+  downstreamExonEnd <- event$downstreamEE
+  
+  # Junction counts (from your data)
+  IJC1 <- event$IJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  SJC1 <- event$SJC_SAMPLE_1 %>% strsplit(",") %>% unlist() %>% as.numeric()
+  
+  # Sum counts across replicates (adjust as needed)
+  IJC_sum <- sum(IJC1)
+  SJC_sum <- sum(SJC1)
+  
+  # Define exon rectangles (positions and labels)
+  exons <- data.frame(
+    xmin = c(upstreamExonStart, exonStart, downstreamExonStart),
+    xmax = c(upstreamExonEnd, exonEnd, downstreamExonEnd),
+    ymin = -0.1,
+    ymax = 0.1,
+    label = c("Upstream Exon", "Skipped Exon", "Downstream Exon")
+  )
+  
+  # Define arcs for junctions
+  junctions <- data.frame(
+    x = c(upstreamExonEnd, upstreamExonEnd),
+    xend = c(exonStart, downstreamExonStart),
+    y = 0.1,
+    yend = 0.1,
+    count = c(IJC_sum, SJC_sum),
+    label = c("Inclusion", "Skipping")
+  )
+  
+  # Plot for the current event
+  plot <- ggplot() +
+    # Exon boxes with custom fill color
+    geom_rect(data = exons, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
+              fill = "#A1C9F4", color = "black", size = 0.5) +
+    
+    # Arcs for splice junctions with customization (color and line thickness)
+    geom_curve(data = junctions, 
+               aes(x = x, xend = xend, y = y, yend = yend), 
+               curvature = 0.3, 
+               linewidth = 1, 
+               color = "#FF6F61") +
+    
+    # Junction count labels (position, size, color)
+    geom_text(data = junctions, 
+              aes(x = (x + xend) / 2, y = y + 0.15, label = count), 
+              size = 5, color = "black") +
+    
+    # Title and axis labels with gene name
+    labs(title = paste("Sashimi-style Plot \n(rMATS Skipped Exon Event)\nGene:", event$geneSymbol, chrom),
+         x = "Genomic Position", y = "") +
+    
+    # Customizing the plot theme
+    theme_minimal(base_size = 14) +
+    theme(
+      axis.text.y = element_blank(),  # Remove y-axis ticks
+      axis.ticks.y = element_blank(),
+      panel.grid = element_blank(),  # Remove grid lines
+      plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 14, hjust = 0.5),
+      legend.position = "none"  # Remove legend if not needed
+    )
+  
+  # Store plot in the list
+  plot_list[[i]] <- plot
+}
+
+# If you want to view all plots
+
+grid.arrange(grobs = plot_list, ncol = 2) # Adjust `ncol` as needed
 
