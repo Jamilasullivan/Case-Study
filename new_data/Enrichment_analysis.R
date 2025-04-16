@@ -306,7 +306,7 @@ limma_results2 <- read.csv("limma_differential_expression_results.csv", row.name
 limma_filtered2 <- limma_results2[order(-limma_results2$logFC),] # ordering data by descending log2foldchange
 limma_filtered2
 summary(limma_filtered2)
-view(limma_filtered2)
+#view(limma_filtered2)
 
 ##### extract stat column #####
 
@@ -315,7 +315,7 @@ names(gene_list) <- rownames(limma_filtered2)
 as.data.frame(gene_list)
 gene_list
 
-######################### gene set enrichment analysis #########################
+########################### GO TERM GSEA #######################################
 
 ##### BP #####
 gse_BP <- gseGO(gene_list,
@@ -341,11 +341,11 @@ gse_MF <- gseGO(gene_list,
 head(gse_MF)
 #view(gse_MF)
 
-gse_all <- gseGO(gene_list,
+gseGO_all <- gseGO(gene_list,
                  keyType = "SYMBOL",
                  OrgDb = "org.Mm.eg.db")
-head(gse_all)
-#view(gse_all)
+head(gseGO_all)
+#view(gseGO_all)
 
 ############################## PLOTTING ########################################
 
@@ -353,13 +353,13 @@ head(gse_all)
 
 # These may vary slightly for each different run of the code dues to adjusted p-values. Change the number following 'geneSetID' to the number of the term of interest in the object. 
 
-gseaplot2(gse_BP, geneSetID = 1, title = gse_all@result$Description[1])  
+gseaplot2(gse_BP, geneSetID = 1, title = gse_BP@result$Description[1])  
 
-gseaplot2(gse_CC, geneSetID = 1, title = gse_all@result$Description[1])
+gseaplot2(gse_CC, geneSetID = 1, title = gse_CC@result$Description[1])
 
-gseaplot2(gse_MF, geneSetID = 1, title = gse_all@result$Description[1])
+gseaplot2(gse_MF, geneSetID = 1, title = gse_MF@result$Description[1])
 
-gseaplot2(gse_all, geneSetID = 1, title = gse_all@result$Description[1])
+gseaplot2(gseGO_all, geneSetID = 1, title = gseGO_all@result$Description[1])
 
 gene_list[1]
 gene_list[8000] # alter the number to see how long the list is
@@ -368,7 +368,7 @@ gene_list[8000] # alter the number to see how long the list is
 
 ##### ridge plot #####
 
-ridge_all <- ridgeplot(gse_all, showCategory = 20)
+ridge_all <- ridgeplot(gseGO_all, showCategory = 15)
 
 ridge_all + 
   scale_fill_gradient(low = "#FF4F4F", high = "#570000") +  # Blue gradient
@@ -388,7 +388,7 @@ ridge_all +
 
 ##### dot plot #####
 
-dot_all <- dotplot(gse_all, showCategory = 20)$data
+dot_all <- dotplot(gseGO_all, showCategory = 20)$data
 
 ggplot(dot_all, aes(x = NES, 
                      y = reorder(Description, NES), 
@@ -414,15 +414,14 @@ ggplot(dot_all, aes(x = NES,
 
 ##### heatmap #####
 
-heatplot_gse_all <- heatplot(gse_all, showCategory = 10)
+heatplot_gseGO_all <- heatplot(gseGO_all, showCategory = 10)
 
-heatplot_gse_all + 
+heatplot_gseGO_all + 
   labs(title = "Top 10 Enriched GO Terms")  # Title for the plot
 
 ##### enrichment map #####
 
-emapplot(gse_all, showCategory = 30) # doesn't work
-emapplot(pairwise_termsim(gse_all), showCategory = 30) # works
+emapplot(pairwise_termsim(gseGO_all), showCategory = 20) # works
 
 ######################### Plotting with ggplot2 ################################
 
@@ -460,59 +459,50 @@ ggplot(plot_data2, aes(x = reorder(Description, setSize), y = setSize, fill = On
   coord_flip()+
   theme()
 
-################################################################################
-######################## GENE SET PATHWAY ENRICHMENT ###########################
-################################################################################
+########################## KEGG PATHWAY GSEA ###################################
 
+############################# DATA SORTING #####################################
 
-
+#limma_filtered2
+#gene_list
 # Create the gene list: log2 fold changes as values, Entrez IDs as names
-summary(limma_filtered)
-#view(limma_filtered)
-gse_genes <- limma_filtered$logFC
+summary(limma_filtered2)
+#view(limma_filtered2)
+gse_genes <- limma_filtered2$logFC
 
 # Ensure the gene list has Entrez gene IDs as names
-names(gse_genes) <- rownames(limma_filtered)
+names(gse_genes) <- rownames(limma_filtered2)
 gse_genes
 
 # Sort the gene list in decreasing order (important for GSEA)
 gse_genes <- sort(gse_genes, decreasing = TRUE)
-summary(gse_genes)
-gse_genes
+summary(gene_list)
+#view(gene_list)
 
-gene_id <-bitr(rownames(limma_filtered),
+gene_id <-bitr(rownames(limma_filtered2),
                fromType = "SYMBOL", 
                toType = "ENTREZID",  
                OrgDb= "org.Mm.eg.db")
 
-limma_filtered
+limma_filtered2
 
-limma_filtered <- rownames_to_column(limma_filtered, "SYMBOL")  # Convert rownames to a column
-limma_filtered <- left_join(limma_filtered, gene_id, by = "SYMBOL")  # Join to match ENTREZID
-
-# Remove rows with missing ENTREZID
-limma_filtered <- limma_filtered %>% filter(!is.na(ENTREZID))
-
-# Create the named vector for GSEA
-gse_genes <- limma_filtered$logFC
-names(gse_genes) <- limma_filtered$ENTREZID
-limma_filtered
-view(limma_filtered)
-
-limma_filtered <- as.data.frame(limma_filtered)
-
-limma_filtered <- rownames_to_column(limma_filtered, "SYMBOL")  # Convert rownames to a column
-limma_filtered <- left_join(limma_filtered, gene_id, by = "SYMBOL")  # Join to match ENTREZID
+limma_filtered2 <- rownames_to_column(limma_filtered2, "SYMBOL")  # Convert rownames to a column
+limma_filtered2 <- left_join(limma_filtered2, gene_id, by = "SYMBOL")  # Join to match ENTREZID
 
 # Remove rows with missing ENTREZID
-limma_filtered <- limma_filtered %>% filter(!is.na(ENTREZID))
+limma_filtered2 <- limma_filtered2 %>% filter(!is.na(ENTREZID))
 
 # Create the named vector for GSEA
-gse_genes <- deseq_filtered$log2FoldChange
-names(gse_genes) <- deseq_filtered$ENTREZID
-gse_genes <- sort(gse_genes, decreasing = TRUE)
+gse_genes <- limma_filtered2$logFC
+names(gse_genes) <- limma_filtered2$ENTREZID
+limma_filtered2
+#view(limma_filtered2)
+
+limma_filtered2 <- as.data.frame(limma_filtered2)
+limma_filtered2
 gse_genes
-summary(gse_genes)
+
+########################## KEGG PATHWAY GSEA ###################################
 
 gse_KEGG <- gseKEGG(geneList = gse_genes,
                     organism = "mmu")
@@ -529,10 +519,68 @@ ggplot(gse_KEGGplot, aes(x = reorder(Description, setSize), y = setSize, fill = 
   coord_flip()+
   theme()
 
-head(gse_KEGG, n=41)
+head(gse_KEGG, n=41) # to show a specific number of significant findings from the output
 
-gseaplot(gse_KEGG, geneSetID = 1)
-gseaplot(gse_KEGG, geneSetID = 2)
-gseaplot(gse_KEGG, geneSetID = 3)
-gseaplot(gse_KEGG, geneSetID = 4)
+########################## PLOTTING RESULTS ####################################
+
+##### GSEA plots #####
+
+gseaplot2(gse_KEGG, geneSetID = 1, title = gse_KEGG@result$Description[1]) # change the number for a speicific event in the list that you'd like to look at. 
+
+##### ridge plot #####
+
+ridge_all <- ridgeplot(gse_KEGG, showCategory = 15)
+
+ridge_all + 
+  scale_fill_gradient(low = "#FF9B09", high = "#603900") +  # Blue gradient
+  labs(title = "GO Enrichment Ridge Plot",
+       x = "Enrichment Score",
+       y = "GO Term") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    legend.title = element_text(size = 13),
+    legend.text = element_text(size = 11),
+    panel.grid.major.y = element_blank(),  # Clean up background
+    panel.grid.minor = element_blank()
+  )
+
+##### dot plot #####
+
+dot_all <- dotplot(gse_KEGG, showCategory = 20)$data
+
+ggplot(dot_all, aes(x = NES, 
+                    y = reorder(Description, NES), 
+                    size = setSize, 
+                    color = p.adjust)) +
+  geom_point() +
+  scale_color_gradient(low = "#FF4DB2", high = "#700140", name = "Adjusted p-value") +
+  scale_size_continuous(name = "Gene Set Size") +
+  labs(
+    title = "Top Enriched GO Terms (GSEA)",
+    x = "Normalized Enrichment Score (NES)",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    legend.title = element_text(size = 13),
+    legend.text = element_text(size = 11),
+    panel.grid.major.y = element_blank()
+  )
+
+##### heatmap #####
+
+heatplot_gse_KEGG <- heatplot(gse_KEGG, showCategory = 10)
+
+heatplot_gse_KEGG + 
+  labs(title = "Top 10 Enriched GO Terms")  # Title for the plot
+
+##### enrichment map #####
+
+emapplot(pairwise_termsim(gse_KEGG), showCategory = 20) # works
 
